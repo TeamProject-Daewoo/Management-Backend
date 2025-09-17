@@ -19,7 +19,7 @@ public class SecurityConfig {
       .csrf(csrf -> csrf.disable())
       .cors(Customizer.withDefaults())
       .authorizeHttpRequests(auth -> auth
-        .requestMatchers("/api/business/**").permitAll() // 여기만 열어도 됨
+        .requestMatchers("/business/**").permitAll() // 여기만 열어도 됨
         .anyRequest().permitAll()
       )
       .httpBasic(h -> h.disable())
