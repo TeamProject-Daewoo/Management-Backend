@@ -1,11 +1,13 @@
+// com.example.backend.hotel.HotelAdminController
 package com.example.backend.hotel;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.*;
 import com.example.backend.hotel_intro.*;
 import com.example.backend.payment.PaymentDTO;
 import com.example.backend.reservation.ReservationDTO;
 import com.example.backend.room.RoomDTO;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
 @RestController

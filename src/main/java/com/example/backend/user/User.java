@@ -1,36 +1,25 @@
 package com.example.backend.user;
 
-import java.time.LocalDateTime;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Getter; import lombok.Setter;
+import java.time.LocalDateTime;
 
 @Entity @Table(name="users")
 @Getter @Setter
 public class User {
+  @Id @Column(name="user_name") private String userName;
 
-  @Id
-  @Column(name="user_name")
-  private String userName;
+  @Column(name="join_date") private LocalDateTime joinDate;
+  @Column(name="login_type") private String loginType;
+  @Column(name="name") private String name;
+  @Column(name="password_hash") private String passwordHash;
+  @Column(name="phone_number") private String phoneNumber;
+  @Column(name="uuid") private String uuid;
 
-  @Enumerated(EnumType.STRING)
-  @Column(name="approval_status")
+  @Enumerated(EnumType.STRING) @Column(name="approval_status")
   private ApprovalStatus approvalStatus;
 
-  private String email;
-
-  @Column(name="join_date")
-  private LocalDateTime joinDate;
-
-  private String name;
-
-  @Column(name="password_hash")
-  private String passwordHash;
-
-  @Column(name="phone_number")
-  private String phoneNumber;
-
-  @Enumerated(EnumType.STRING)
+  @Enumerated(EnumType.STRING) @Column(name="role")
   private Role role;
 
   public enum ApprovalStatus { APPROVED, PENDING, REJECTED }

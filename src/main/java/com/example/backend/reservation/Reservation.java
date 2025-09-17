@@ -1,51 +1,36 @@
 package com.example.backend.reservation;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import com.example.backend.user.User;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Getter; import lombok.Setter;
+import java.time.LocalDate; import java.time.LocalDateTime;
 
 @Entity @Table(name="reservations")
 @Getter @Setter
 public class Reservation {
+  @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Column(name="reservation_id") private Long reservationId;
 
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @Column(name="reservation_id")
-  private Long reservationId;
+  // FK to hotels.id (BIGINT)
+  @Column(name="contentid") private Long contentid;
 
-  @Column(name="user_name", nullable=false)
-  private String userName;      // FK -> users.user_name (연관 매핑 대신 단순 문자열 보관)
+  @Column(name="roomcode") private String roomcode;
 
-  @Column(name="contentid", nullable=false)
-  private String contentid;     // FK -> hotels.contentid (varchar)
+  @Column(name="check_in_date") private LocalDate checkInDate;
+  @Column(name="check_out_date") private LocalDate checkOutDate;
 
-  private String roomcode;
+  @Column(name="num_adults") private Integer numAdults;
+  @Column(name="num_children") private Integer numChildren;
 
-  @Column(name="check_in_date")
-  private LocalDate checkInDate;
+  @Column(name="status") private String status;
+  @Column(name="total_price") private Integer totalPrice;
 
-  @Column(name="check_out_date")
-  private LocalDate checkOutDate;
+  @Column(name="reservation_date") private LocalDateTime reservationDate;
 
-  @Column(name="num_adults")
-  private Integer numAdults;
+  @Column(name="reserv_name") private String reservName;
+  @Column(name="reserv_phone") private String reservPhone;
 
-  @Column(name="num_children")
-  private Integer numChildren;
-
-  private String status;
-
-  @Column(name="total_price")
-  private Integer totalPrice;
-
-  @Column(name="reservation_date")
-  private LocalDateTime reservationDate;
-
-  // 필요하면 연관관계도 추가 가능 (지금은 조회용으로 User를 fetch하지 않아도 됨)
-  @ManyToOne(fetch = FetchType.LAZY, optional = true)
-  @JoinColumn(name="user_name", referencedColumnName="user_name", insertable=false, updatable=false)
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name="user_name", referencedColumnName = "user_name")
   private User user;
 }

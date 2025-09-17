@@ -1,10 +1,6 @@
+// com.example.backend.payment.PaymentDTO
 package com.example.backend.payment;
-
-import java.time.LocalDateTime;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
+import lombok.*; import java.time.*;
 @Data @NoArgsConstructor @AllArgsConstructor
 public class PaymentDTO {
   private Long paymentId;
