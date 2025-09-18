@@ -249,7 +249,7 @@ public class HotelAdminService {
         .stream()
         .map(r -> new ReservationDTO(
             r.getReservationId(),
-            r.getUser() != null ? r.getUser().getUserName() : null,
+            r.getUser() != null ? r.getUser().getUsername() : null,
             r.getUser() != null ? r.getUser().getName() : null,
             null,
             r.getUser() != null ? r.getUser().getPhoneNumber() : null,

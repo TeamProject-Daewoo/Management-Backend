@@ -2,7 +2,8 @@ package com.example.backend.reservation;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import com.example.backend.user.User;
+
+import com.example.backend.authentication.User;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.persistence.Id;

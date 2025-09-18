@@ -1,41 +1,75 @@
 package com.example.backend.config;
 
 import java.util.List;
+
+import com.example.backend.authentication.JwtAuthenticationFilter;
+import com.example.backend.authentication.JwtTokenProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.Customizer;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import lombok.RequiredArgsConstructor;
 
 @Configuration
+@EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
-  @Bean
-  SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-    http
-      .csrf(csrf -> csrf.disable())
-      .cors(Customizer.withDefaults())
-      .authorizeHttpRequests(auth -> auth
-        .requestMatchers("/business/**").permitAll() // 여기만 열어도 됨
-        .anyRequest().permitAll()
-      )
-      .httpBasic(h -> h.disable())
-      .formLogin(f -> f.disable());
-    return http.build();
-  }
+    private final JwtTokenProvider jwtTokenProvider;
 
-  @Bean
-  CorsConfigurationSource corsConfigurationSource() {
-    CorsConfiguration cfg = new CorsConfiguration();
-    cfg.setAllowedOriginPatterns(List.of("http://localhost:*", "http://127.0.0.1:*"));
-    cfg.setAllowedMethods(List.of("GET","POST","PUT","DELETE","PATCH","OPTIONS"));
-    cfg.setAllowedHeaders(List.of("*"));
-    cfg.setAllowCredentials(true);
-    UrlBasedCorsConfigurationSource src = new UrlBasedCorsConfigurationSource();
-    src.registerCorsConfiguration("/**", cfg);
-    return src;
-  }
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+            // HTTP 기본 인증 및 CSRF 보안 비활성화
+            .httpBasic(httpBasic -> httpBasic.disable())
+            .csrf(csrf -> csrf.disable())
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+
+            // 세션 관리 정책을 STATELESS(상태 비저장)로 설정
+            .sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            
+            // 요청별 권한 설정
+            .authorizeHttpRequests(authorize -> authorize
+                    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                    .requestMatchers("/api/auth/**").permitAll()
+                    .requestMatchers("/business/**").hasAnyRole( "BUSINESS")
+                    // 그 외 모든 요청은 반드시 인증(로그인) 필요
+                    .anyRequest().authenticated())
+            
+            // 이전에 만든 JwtAuthenticationFilter를 UsernamePasswordAuthenticationFilter 앞에 추가
+            .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
+    }
+
+     @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration config = new CorsConfiguration();
+        
+        config.setAllowCredentials(true);
+        config.setAllowedOrigins(List.of("http://127.0.0.1:5173", "http://localhost:5173"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+        config.setAllowedHeaders(List.of("*"));
+        config.setExposedHeaders(List.of("*"));
+        
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        // BCrypt 암호화 알고리즘을 사용하는 PasswordEncoder를 반환
+        return new BCryptPasswordEncoder();
+    }
 }
