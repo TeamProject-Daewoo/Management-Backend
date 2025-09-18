@@ -42,7 +42,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(authorize -> authorize
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                     .requestMatchers("/api/auth/**").permitAll()
-                    .requestMatchers("/business/**").hasAnyRole( "BUSINESS")
+                    .requestMatchers("/business/**").hasAnyRole("BUSINESS")
                     // 그 외 모든 요청은 반드시 인증(로그인) 필요
                     .anyRequest().authenticated())
             

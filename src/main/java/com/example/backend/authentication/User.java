@@ -74,7 +74,7 @@ public class User implements UserDetails {
     // --- UserDetails 인터페이스 구현 메소드들 ---
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(new SimpleGrantedAuthority(role.name()));
+        return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
     }
 
     @Override
