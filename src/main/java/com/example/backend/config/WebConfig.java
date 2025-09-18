@@ -11,7 +11,7 @@ public class WebConfig implements WebMvcConfigurer {
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
                 .allowedOrigins(
-                    "http://localhost:5173", // Vite 기본 포트
+                    "http://localhost:5174", // Vite 기본 포트
                     "http://localhost:8080", // Vue CLI 기본 포트
                     "http://localhost:8889"  // 사용자 지정 포트
                 )

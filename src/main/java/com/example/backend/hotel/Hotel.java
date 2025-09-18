@@ -1,11 +1,6 @@
 package com.example.backend.hotel;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import jakarta.persistence.Column;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -15,30 +10,40 @@ import lombok.Setter;
 @Setter
 public class Hotel {
 
+  // ✅ 스키마상 PK는 contentid(varchar)
   @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Column(name = "contentid", nullable = false, updatable = false)
+  private String contentid;
+
+  // 스키마에 존재하지만 PK 아님 (AUTO_INCREMENT 아님)
+  @Column(name = "id")
   private Long id;
 
+  @Column(name = "addr1")
   private String addr1;
 
   @Column(name = "area_code")
   private String areaCode;
 
+  @Column(name = "category")
   private String category;
 
-  private String contentid;
-
+  @Column(name = "firstimage")
   private String firstimage;
 
+  @Column(name = "mapx")
   private String mapx;
 
+  @Column(name = "mapy")
   private String mapy;
 
   @Column(name = "sigungu_code")
   private String sigunguCode;
 
+  @Column(name = "tel")
   private String tel;
 
+  @Column(name = "title")
   private String title;
 
   @Column(name = "business_registration_number")

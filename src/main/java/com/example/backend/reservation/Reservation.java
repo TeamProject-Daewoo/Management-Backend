@@ -4,15 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import com.example.backend.authentication.User;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
-import jakarta.persistence.Id;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Column;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -27,9 +19,9 @@ public class Reservation {
   @Column(name = "reservation_id")
   private Long reservationId;
 
-  // FK → hotels.id (bigint)
+  // ✅ FK → hotels.contentid (varchar). 타입을 String으로 맞춤
   @Column(name = "contentid")
-  private Long contentid;
+  private String contentid;
 
   @Column(name = "roomcode")
   private String roomcode;
