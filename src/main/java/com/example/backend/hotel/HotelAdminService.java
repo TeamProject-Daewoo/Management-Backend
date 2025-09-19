@@ -176,10 +176,8 @@ public class HotelAdminService {
     }
 
     return picked.values().stream()
-        .map(r -> new RoomDTO(
-            r.getId(), r.getRoomcode(), r.getRoomtitle(), r.getRoombasecount(),
-            r.getRoommaxcount(), r.getRoomoffseasonminfee1(), r.getRoompeakseasonminfee1()
-        )).toList();
+        .map(RoomDTO::from) // ✅ thumb/옵션 포함 일관된 DTO 변환
+        .toList();
   }
 
   @Transactional
@@ -201,10 +199,7 @@ public class HotelAdminService {
     r.setRoompeakseasonminfee1(dto.getRoompeakseasonminfee1());
     roomRepo.save(r);
 
-    return new RoomDTO(
-        r.getId(), r.getRoomcode(), r.getRoomtitle(), r.getRoombasecount(),
-        r.getRoommaxcount(), r.getRoomoffseasonminfee1(), r.getRoompeakseasonminfee1()
-    );
+    return RoomDTO.from(r); // ✅ 일관성 있게 from 사용
   }
 
   @Transactional
@@ -229,10 +224,7 @@ public class HotelAdminService {
 
     roomRepo.save(r);
 
-    return new RoomDTO(
-        r.getId(), r.getRoomcode(), r.getRoomtitle(), r.getRoombasecount(),
-        r.getRoommaxcount(), r.getRoomoffseasonminfee1(), r.getRoompeakseasonminfee1()
-    );
+    return RoomDTO.from(r); // ✅ 일관성 있게 from 사용
   }
 
   @Transactional
@@ -245,22 +237,48 @@ public class HotelAdminService {
   @Transactional(readOnly = true)
   public List<ReservationDTO> getReservations(String contentid) {
     String cid = resolveHotelForBusiness(contentid).getContentid();
+
+    // ✅ rooms 전량 로드 후 id → title 매핑 (N+1 제거) / null 안전하게 수집
+    Map<Long, String> titleById = new LinkedHashMap<>();
+    for (Room rm : roomRepo.findByContentid(cid)) {
+      titleById.put(rm.getId(), rm.getRoomtitle() == null ? null : rm.getRoomtitle().trim());
+    }
+
     return reservationRepo.findByContentidOrderByReservationDateDesc(cid).stream()
-        .map(r -> new ReservationDTO(
-            r.getReservationId(),
-            r.getUser() != null ? r.getUser().getUsername() : null,
-            r.getUser() != null ? r.getUser().getName() : null,
-            null,
-            r.getUser() != null ? r.getUser().getPhoneNumber() : null,
-            r.getReservName(),
-            r.getReservPhone(),
-            r.getCheckInDate(),
-            r.getCheckOutDate(),
-            r.getRoomcode(),
-            r.getStatus(),
-            r.getTotalPrice(),
-            r.getReservationDate()
-        )).toList();
+        .map(r -> {
+          String roomTitle = null;
+          String code = r.getRoomcode(); // 예약에는 문자열로 저장된 rooms.id
+
+          if (code != null && !code.isBlank()) {
+            try {
+              Long roomId = Long.valueOf(code.trim()); // roomcode → Long id
+              roomTitle = titleById.get(roomId);
+              if (roomTitle == null || roomTitle.isBlank()) {
+                roomTitle = code; // 타이틀 없으면 코드 그대로
+              }
+            } catch (NumberFormatException e) {
+              // 숫자 변환 실패 시(레거시 데이터 대비) roomcode 그대로 사용
+              roomTitle = code;
+            }
+          }
+
+          return new ReservationDTO(
+              r.getReservationId(),
+              r.getUser() != null ? r.getUser().getUsername() : null,
+              r.getUser() != null ? r.getUser().getName() : null,
+              null,
+              r.getUser() != null ? r.getUser().getPhoneNumber() : null,
+              r.getReservName(),
+              r.getReservPhone(),
+              r.getCheckInDate(),
+              r.getCheckOutDate(),
+              r.getRoomcode(),     // 원본(room id 문자열)
+              roomTitle,           // ✅ 매핑된 객실명 (없으면 코드)
+              r.getStatus(),
+              r.getTotalPrice(),
+              r.getReservationDate()
+          );
+        }).toList();
   }
 
   @Transactional(readOnly = true)

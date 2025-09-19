@@ -31,6 +31,8 @@ public class ReservationDTO {
 
   private String roomcode;
 
+  private String roomtitle;
+  
   private String status;
 
   private Integer totalPrice;
