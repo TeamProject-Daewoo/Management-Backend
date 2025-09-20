@@ -43,6 +43,7 @@ public class SecurityConfig {
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                     .requestMatchers("/api/auth/**").permitAll()
                     .requestMatchers("/business/**").hasAnyRole("BUSINESS")
+                    .requestMatchers("/admin/**").hasRole("ADMIN")
                     // 그 외 모든 요청은 반드시 인증(로그인) 필요
                     .anyRequest().authenticated())
             
@@ -52,12 +53,18 @@ public class SecurityConfig {
         return http.build();
     }
 
-     @Bean
+    @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         
         config.setAllowCredentials(true);
-        config.setAllowedOrigins(List.of("http://127.0.0.1:5174", "http://localhost:5174"));
+        config.setAllowedOrigins(List.of(
+        		"http://localhost:7000", 
+                "http://127.0.0.1:7000",
+                "http://localhost:5174",
+                "http://127.0.0.1:5174",
+                "http://localhost:6500"
+        		));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setExposedHeaders(List.of("*"));
