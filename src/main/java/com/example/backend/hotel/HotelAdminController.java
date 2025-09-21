@@ -4,11 +4,13 @@ package com.example.backend.hotel;
 import java.util.List;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.example.backend.hotel_intro.HotelIntroDTO;
 import com.example.backend.hotel_intro.HotelIntroUpdateRequest;
 import com.example.backend.payment.PaymentDTO;
+import com.example.backend.reservation.BulkRequest;
 import com.example.backend.reservation.ReservationDTO;
 import com.example.backend.room.RoomDTO;
 
@@ -25,7 +27,7 @@ public class HotelAdminController {
     return svc.listMyHotels();
   }
 
-  // ▶ 기본 정보 (선택 contentid)
+  // ▶ 기본 정보
   @GetMapping("/hotel")
   public HotelDTO getHotel(@RequestParam(value = "contentid", required = false) String contentid) {
     return svc.getHotelBasic(contentid);
@@ -83,4 +85,38 @@ public class HotelAdminController {
   public List<PaymentDTO> payments(@RequestParam(value = "contentid", required = false) String contentid) {
     return svc.getPaymentsForHotel(contentid);
   }
+
+  // ▶ 예약 일괄 작업
+  @PostMapping("/reservations/bulk")
+  public ResponseEntity<Void> bulkReservations(
+          @RequestParam(required = false) String contentid,
+          @RequestBody BulkRequest req) {
+      svc.processBulkReservations(contentid, req.getIds(), req.getAction());
+      return ResponseEntity.ok().build();
+  }
+
+  @PutMapping("/reservations/{id}/status")
+  public ReservationDTO updateReservationStatus(
+      @PathVariable Long id,
+      @RequestParam String status
+  ) {
+      return svc.updateReservationStatus(id, status);
+  }
+
+  @PutMapping("/payments/{id}/status")
+public ResponseEntity<Void> updatePaymentStatus(
+        @PathVariable Long id,
+        @RequestParam String status) {
+    svc.updatePaymentStatus(id, status);
+    return ResponseEntity.ok().build();
+}
+
+ @PutMapping("/reservations/{id}")
+    public ReservationDTO updateReservation(
+            @PathVariable Long id,
+            @RequestBody ReservationDTO dto
+    ) {
+        return svc.updateReservation(id, dto); // 서비스에서 통합 수정 처리
+    }
+
 }

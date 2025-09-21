@@ -1,9 +1,11 @@
 // HotelAdminService.java
 package com.example.backend.hotel;
 
+import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -233,53 +235,78 @@ public class HotelAdminService {
     roomRepo.deleteById(roomId);
   }
 
-  // ---------- Reservations & Payments ----------
-  @Transactional(readOnly = true)
-  public List<ReservationDTO> getReservations(String contentid) {
-    String cid = resolveHotelForBusiness(contentid).getContentid();
-
-    // ✅ rooms 전량 로드 후 id → title 매핑 (N+1 제거) / null 안전하게 수집
-    Map<Long, String> titleById = new LinkedHashMap<>();
-    for (Room rm : roomRepo.findByContentid(cid)) {
-      titleById.put(rm.getId(), rm.getRoomtitle() == null ? null : rm.getRoomtitle().trim());
+   // ---------- Reservations & Payments ----------
+@Transactional(readOnly = true)
+public List<ReservationDTO> getReservations(String contentid) {
+    List<Reservation> reservations;
+    if (contentid == null || contentid.isBlank()) {
+        reservations = getBusinessHotelsOrThrow().stream()
+            .flatMap(h -> reservationRepo.findByContentidOrderByReservationDateDesc(h.getContentid()).stream())
+            .toList();
+    } else {
+        String cid = resolveHotelForBusiness(contentid).getContentid();
+        reservations = reservationRepo.findByContentidOrderByReservationDateDesc(cid);
     }
 
-    return reservationRepo.findByContentidOrderByReservationDateDesc(cid).stream()
-        .map(r -> {
-          String roomTitle = null;
-          String code = r.getRoomcode(); // 예약에는 문자열로 저장된 rooms.id
+    // ✅ 모든 객실 한번에 로딩
+    Map<String, String> roomMap = roomRepo.findAll().stream()
+        .collect(Collectors.toMap(
+            r -> r.getContentid() + "::" + r.getRoomcode(),
+            Room::getRoomtitle,
+            (a, b) -> a
+        ));
 
-          if (code != null && !code.isBlank()) {
-            try {
-              Long roomId = Long.valueOf(code.trim()); // roomcode → Long id
-              roomTitle = titleById.get(roomId);
-              if (roomTitle == null || roomTitle.isBlank()) {
-                roomTitle = code; // 타이틀 없으면 코드 그대로
-              }
-            } catch (NumberFormatException e) {
-              // 숫자 변환 실패 시(레거시 데이터 대비) roomcode 그대로 사용
-              roomTitle = code;
-            }
-          }
+    return reservations.stream()
+        .map(r -> toDtoWithPayment(r, roomMap))
+        .toList();
+}
 
-          return new ReservationDTO(
-              r.getReservationId(),
-              r.getUser() != null ? r.getUser().getUsername() : null,
-              r.getUser() != null ? r.getUser().getName() : null,
-              null,
-              r.getUser() != null ? r.getUser().getPhoneNumber() : null,
-              r.getReservName(),
-              r.getReservPhone(),
-              r.getCheckInDate(),
-              r.getCheckOutDate(),
-              r.getRoomcode(),     // 원본(room id 문자열)
-              roomTitle,           // ✅ 매핑된 객실명 (없으면 코드)
-              r.getStatus(),
-              r.getTotalPrice(),
-              r.getReservationDate()
-          );
-        }).toList();
-  }
+private ReservationDTO toDtoWithPayment(Reservation r, Map<String, String> roomMap) {
+    var payments = paymentRepo.findByReservationReservationId(r.getReservationId());
+
+    String payStatus = null;
+    Long payId = null;
+    LocalDateTime payDate = null;
+    Integer payAmount = null;
+    if (!payments.isEmpty()) {
+        var latest = payments.get(payments.size() - 1);
+        payStatus = latest.getPaymentStatus();
+        payId = latest.getPaymentId();
+        payDate = latest.getPaymentDate();
+        payAmount = latest.getPaymentAmount();
+    }
+
+    // ✅ key = contentid::roomcode
+    String roomKey = (r.getContentid() != null && r.getRoomcode() != null)
+        ? r.getContentid() + "::" + r.getRoomcode()
+        : null;
+    String roomTitle = roomKey != null ? roomMap.get(roomKey) : null;
+
+    return new ReservationDTO(
+        r.getReservationId(),
+        r.getUser() != null ? r.getUser().getUsername() : null,
+        r.getUser() != null ? r.getUser().getName() : null,
+        null,
+        r.getUser() != null ? r.getUser().getPhoneNumber() : null,
+        r.getReservName(),
+        r.getReservPhone(),
+        r.getCheckInDate(),
+        r.getCheckOutDate(),
+        r.getRoomcode(),
+        roomTitle, // ✅ 항상 매핑된 객실 이름 넣기
+        r.getStatus(),
+        r.getTotalPrice(),
+        r.getReservationDate(),
+        r.getNumAdults(),
+        r.getNumChildren(),
+        payStatus,
+        payId,
+        payDate,
+        payAmount
+    );
+}
+
+
 
   @Transactional(readOnly = true)
   public List<PaymentDTO> getPaymentsForHotel(String contentid) {
@@ -298,4 +325,74 @@ public class HotelAdminService {
             p.getPaymentDate()
         )).toList();
   }
+
+  @Transactional
+  public void processBulkReservations(String contentid, List<Long> ids, String action) {
+    String cid = resolveHotelForBusiness(contentid).getContentid();
+
+    switch (action) {
+        case "paidreservation": // 예약 완료 처리 (예약 상태만)
+            reservationRepo.updateStatus(ids, "PAID");
+            break;
+
+        case "paidpayment": // 결제 완료 처리 (결제 상태만)
+            paymentRepo.updatePaymentStatus(ids, "PAID");
+            break;
+
+        case "cancel":
+            reservationRepo.updateStatus(ids, "CANCEL");
+            break;
+
+        case "refund":
+            paymentRepo.updatePaymentStatus(ids, "REFUND");
+            break;
+
+        default:
+            throw new IllegalArgumentException("Unknown action: " + action);
+    }
+  }
+
+  @Transactional
+  public ReservationDTO updateReservationStatus(Long id, String status) {
+    Reservation reservation = reservationRepo.findById(id)
+        .orElseThrow(() -> new RuntimeException("예약 없음"));
+
+    reservation.setStatus(status); // Enum이면 변환 로직 필요
+    reservationRepo.save(reservation);
+
+    return ReservationDTO.from(reservation);
+  }
+
+  @Transactional
+public void updatePaymentStatus(Long id, String status) {
+    var payment = paymentRepo.findById(id)
+        .orElseThrow(() -> new RuntimeException("결제 없음"));
+    payment.setPaymentStatus(status);
+    paymentRepo.save(payment);
+}
+
+@Transactional
+public ReservationDTO updateReservation(Long id, ReservationDTO dto) {
+    Reservation r = reservationRepo.findById(id)
+            .orElseThrow(() -> new RuntimeException("예약을 찾을 수 없습니다. id=" + id));
+
+    // ✅ 예약 필드 수정
+    if (dto.getCheckInDate() != null) r.setCheckInDate(dto.getCheckInDate());
+    if (dto.getCheckOutDate() != null) r.setCheckOutDate(dto.getCheckOutDate());
+    if (dto.getNumAdults() != null) r.setNumAdults(dto.getNumAdults());
+    if (dto.getNumChildren() != null) r.setNumChildren(dto.getNumChildren());
+    if (dto.getStatus() != null) r.setStatus(dto.getStatus());
+
+    reservationRepo.save(r);
+
+    // ✅ 결제 상태도 같이 수정
+    if (dto.getPaymentStatus() != null && dto.getPaymentId() != null) {
+        paymentRepo.findById(dto.getPaymentId()).ifPresent(p -> {
+            p.setPaymentStatus(dto.getPaymentStatus());
+            paymentRepo.save(p);
+        });
+    }
+
+    return ReservationDTO.from(r);
+}
 }
