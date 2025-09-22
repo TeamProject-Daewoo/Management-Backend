@@ -6,17 +6,26 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
+
 @Service
 @RequiredArgsConstructor
 public class NoticeService {
 
     private final NoticeRepository noticeRepository;
 
-    public List<NoticeDTO> getAllNotices() {
-        return noticeRepository.findAll().stream()
-                .map(this::entityToDto)
-                .collect(Collectors.toList());
-    }
+  
+
+    public Page<NoticeDTO> getNoticesPaged(int page, int size, String sortDir) {
+    Sort.Direction direction = Sort.Direction.fromString(sortDir);
+    Pageable pageable = PageRequest.of(page, size, Sort.by(direction, "createdAt"));
+    Page<Notice> noticePage = noticeRepository.findAll(pageable);
+    return noticePage.map(this::entityToDto);
+}
+
 
     public NoticeDTO getNotice(Long id) {
         Notice notice = noticeRepository.findById(id)
