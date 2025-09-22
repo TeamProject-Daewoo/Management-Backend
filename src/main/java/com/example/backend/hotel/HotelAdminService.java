@@ -88,7 +88,7 @@ public class HotelAdminService {
     return getBusinessHotelsOrThrow().stream()
         .map(h -> new HotelDTO(
             h.getId(), h.getContentid(), h.getTitle(), h.getAddr1(),
-            h.getTel(), h.getFirstimage(), h.getMapx(), h.getMapy()
+            h.getTel(), h.getFirstimage(), h.getMapx(), h.getMapy(), h.getBusinessRegistrationNumber()
         )).toList();
   }
 
@@ -97,9 +97,10 @@ public class HotelAdminService {
   public HotelDTO getHotelBasic(String contentid) {
     Hotel h = resolveHotelForBusiness(contentid);
     return new HotelDTO(
-        h.getId(), h.getContentid(), h.getTitle(), h.getAddr1(),
-        h.getTel(), h.getFirstimage(), h.getMapx(), h.getMapy()
-    );
+    h.getId(), h.getContentid(), h.getTitle(), h.getAddr1(),
+    h.getTel(), h.getFirstimage(), h.getMapx(), h.getMapy(),
+    h.getBusinessRegistrationNumber()
+  );
   }
 
   @Transactional
@@ -197,6 +198,7 @@ public class HotelAdminService {
     r.setRoomtitle(dto.getRoomtitle());
     r.setRoombasecount(dto.getRoombasecount());
     r.setRoommaxcount(dto.getRoommaxcount());
+    r.setRoomcount(dto.getRoomcount());
     r.setRoomoffseasonminfee1(dto.getRoomoffseasonminfee1());
     r.setRoompeakseasonminfee1(dto.getRoompeakseasonminfee1());
     roomRepo.save(r);
@@ -221,6 +223,7 @@ public class HotelAdminService {
     if (dto.getRoomcode() != null) r.setRoomcode(dto.getRoomcode());
     if (dto.getRoombasecount() != null) r.setRoombasecount(dto.getRoombasecount());
     if (dto.getRoommaxcount() != null) r.setRoommaxcount(dto.getRoommaxcount());
+    if (dto.getRoomcount() != null) r.setRoomcount(dto.getRoomcount());
     if (dto.getRoomoffseasonminfee1() != null) r.setRoomoffseasonminfee1(dto.getRoomoffseasonminfee1());
     if (dto.getRoompeakseasonminfee1() != null) r.setRoompeakseasonminfee1(dto.getRoompeakseasonminfee1());
 

@@ -119,4 +119,5 @@ public ResponseEntity<Void> updatePaymentStatus(
         return svc.updateReservation(id, dto); // 서비스에서 통합 수정 처리
     }
 
+    
 }

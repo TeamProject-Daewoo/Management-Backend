@@ -17,6 +17,7 @@ public class RoomDTO {
   private String roomtitle;
   private Integer roombasecount;
   private Integer roommaxcount;
+  private Integer roomcount;
   private Integer roomoffseasonminfee1;
   private Integer roompeakseasonminfee1;
 
@@ -26,7 +27,7 @@ public class RoomDTO {
   private String roomimg3;
   private String roomimg4;
   private String roomimg5;
-
+  
   // 옵션(편의시설)
   private String roomaircondition;
   private String roombath;
@@ -55,6 +56,7 @@ public class RoomDTO {
         .roommaxcount(r.getRoommaxcount())
         .roomoffseasonminfee1(r.getRoomoffseasonminfee1())
         .roompeakseasonminfee1(r.getRoompeakseasonminfee1())
+        .roomcount(r.getRoomcount())
         // 이미지들
         .roomimg1(r.getRoomimg1())
         .roomimg2(r.getRoomimg2())
