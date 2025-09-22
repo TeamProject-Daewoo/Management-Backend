@@ -343,11 +343,11 @@ private ReservationDTO toDtoWithPayment(Reservation r, Map<String, String> roomM
             break;
 
         case "cancel":
-            reservationRepo.updateStatus(ids, "CANCEL");
+            reservationRepo.updateStatus(ids, "CANCELLED");
             break;
 
         case "refund":
-            paymentRepo.updatePaymentStatus(ids, "REFUND");
+            paymentRepo.updatePaymentStatus(ids, "CANCELED");
             break;
 
         default:
