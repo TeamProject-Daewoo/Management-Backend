@@ -43,7 +43,9 @@ public class SecurityConfig {
                     .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                     .requestMatchers("/api/auth/**").permitAll()
                     .requestMatchers("/business/**").hasAnyRole("BUSINESS")
+                    .requestMatchers("/api/business/**").hasAnyRole("BUSINESS")
                     .requestMatchers("/admin/**").hasRole("ADMIN")
+                    .requestMatchers("/tour/**").permitAll()
                     // 그 외 모든 요청은 반드시 인증(로그인) 필요
                     .anyRequest().authenticated())
             
