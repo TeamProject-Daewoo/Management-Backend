@@ -32,5 +32,11 @@ public interface RoomPriceOverrideRepository extends JpaRepository<RoomPriceOver
     void deleteByTitleAndStartDateAndEndDateAndRoom_Contentid(
         String title, LocalDate startDate, LocalDate endDate, String contentid
     );
+    
+    List<RoomPriceOverride> findByRoom_ContentidAndEndDateGreaterThanEqualAndStartDateLessThanEqual(
+            String contentid,
+            LocalDate newStartDate,
+            LocalDate newEndDate
+    );
 
 }

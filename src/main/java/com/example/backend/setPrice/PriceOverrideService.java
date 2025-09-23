@@ -21,6 +21,20 @@ public class PriceOverrideService {
 
     @Transactional
     public void createOrUpdatePriceOverrides(PriceOverrideRequestDTO requestDTO) {
+    	
+    	 List<RoomPriceOverride> overlaps = overrideRepository
+                 .findByRoom_ContentidAndEndDateGreaterThanEqualAndStartDateLessThanEqual(
+                		 requestDTO.getHotelContentId(),
+                		 requestDTO.getStartDate(),
+                		 requestDTO.getEndDate()
+                 );
+
+         // 겹치는 데이터가 하나라도 있다면 예외를 발생시켜 저장을 중단!
+         if (!overlaps.isEmpty()) {
+             throw new IllegalStateException("선택하신 기간에 이미 다른 특별가가 설정되어 있습니다. 시작일: " 
+                 + overlaps.get(0).getStartDate() + ", 종료일: " + overlaps.get(0).getEndDate());
+         }
+         
         // DTO에서 받은 priceOverrides 맵을 순회
         requestDTO.getPriceOverrides().forEach((roomId, price) -> {
             // 해당 roomId로 객실 엔티티를 찾음
