@@ -9,4 +9,6 @@ public interface HotelRepository extends JpaRepository<Hotel, String> {
 
     // 여러 호텔 소유 케이스 지원
     List<Hotel> findAllByBusinessRegistrationNumber(String businessRegistrationNumber);
+
+    boolean existsByContentid(String contentid);
 }

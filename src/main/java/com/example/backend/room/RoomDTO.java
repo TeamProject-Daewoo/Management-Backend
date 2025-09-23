@@ -1,10 +1,7 @@
 package com.example.backend.room;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Data
 @NoArgsConstructor
@@ -18,17 +15,24 @@ public class RoomDTO {
   private Integer roombasecount;
   private Integer roommaxcount;
   private Integer roomcount;
-  private Integer roomoffseasonminfee1;
-  private Integer roompeakseasonminfee1;
 
-  // 이미지들
+  private Integer roomoffseasonminfee1;
+  private Integer roomoffseasonminfee2;
+  private Integer roompeakseasonminfee1;
+  private Integer roompeakseasonminfee2;
+
+  private String roomsize1;
+  private String roomsize2;
+  private String roomintro;
+
+  // 이미지
   private String roomimg1;
   private String roomimg2;
   private String roomimg3;
   private String roomimg4;
   private String roomimg5;
-  
-  // 옵션(편의시설)
+
+  // 옵션
   private String roomaircondition;
   private String roombath;
   private String roombathfacility;
@@ -44,7 +48,6 @@ public class RoomDTO {
   private String roomtoiletries;
   private String roomtv;
 
-  // 대표 이미지
   private String thumb;
 
   public static RoomDTO from(Room r) {
@@ -54,10 +57,15 @@ public class RoomDTO {
         .roomtitle(r.getRoomtitle())
         .roombasecount(r.getRoombasecount())
         .roommaxcount(r.getRoommaxcount())
-        .roomoffseasonminfee1(r.getRoomoffseasonminfee1())
-        .roompeakseasonminfee1(r.getRoompeakseasonminfee1())
         .roomcount(r.getRoomcount())
-        // 이미지들
+        .roomoffseasonminfee1(r.getRoomoffseasonminfee1())
+        .roomoffseasonminfee2(r.getRoomoffseasonminfee2())
+        .roompeakseasonminfee1(r.getRoompeakseasonminfee1())
+        .roompeakseasonminfee2(r.getRoompeakseasonminfee2())
+        .roomsize1(r.getRoomsize1())
+        .roomsize2(r.getRoomsize2())
+        .roomintro(r.getRoomintro())
+        // 이미지
         .roomimg1(r.getRoomimg1())
         .roomimg2(r.getRoomimg2())
         .roomimg3(r.getRoomimg3())
@@ -78,18 +86,54 @@ public class RoomDTO {
         .roomtable(r.getRoomtable())
         .roomtoiletries(r.getRoomtoiletries())
         .roomtv(r.getRoomtv())
-        // 대표 이미지(첫 유효 이미지)
-        .thumb(firstNonBlank(
-            r.getRoomimg1(), r.getRoomimg2(), r.getRoomimg3(), r.getRoomimg4(), r.getRoomimg5()
-        ))
+        // 대표 이미지
+        .thumb(firstNonBlank(r.getRoomimg1(), r.getRoomimg2(), r.getRoomimg3(), r.getRoomimg4(), r.getRoomimg5()))
         .build();
   }
 
-  /** 가용한 첫 문자열 반환 (null/빈문자열/공백은 무시) */
+  public Room toEntity(String contentid) {
+    Room r = new Room();
+    r.setContentid(contentid);
+    r.setRoomcode(roomcode);
+    r.setRoomtitle(roomtitle);
+    r.setRoombasecount(roombasecount);
+    r.setRoommaxcount(roommaxcount);
+    r.setRoomcount(roomcount);
+    r.setRoomoffseasonminfee1(roomoffseasonminfee1);
+    r.setRoomoffseasonminfee2(roomoffseasonminfee2);
+    r.setRoompeakseasonminfee1(roompeakseasonminfee1);
+    r.setRoompeakseasonminfee2(roompeakseasonminfee2);
+    r.setRoomsize1(roomsize1);
+    r.setRoomsize2(roomsize2);
+    r.setRoomintro(roomintro);
+    r.setRoomimg1(roomimg1);
+    r.setRoomimg2(roomimg2);
+    r.setRoomimg3(roomimg3);
+    r.setRoomimg4(roomimg4);
+    r.setRoomimg5(roomimg5);
+    r.setRoomaircondition(roomaircondition);
+    r.setRoombath(roombath);
+    r.setRoombathfacility(roombathfacility);
+    r.setRoomcable(roomcable);
+    r.setRoomcook(roomcook);
+    r.setRoomhairdryer(roomhairdryer);
+    r.setRoomhometheater(roomhometheater);
+    r.setRoominternet(roominternet);
+    r.setRoompc(roompc);
+    r.setRoomrefrigerator(roomrefrigerator);
+    r.setRoomsofa(roomsofa);
+    r.setRoomtable(roomtable);
+    r.setRoomtoiletries(roomtoiletries);
+    r.setRoomtv(roomtv);
+    return r;
+  }
+
   private static String firstNonBlank(String... arr) {
-    if (arr == null) return null;
+    if (arr == null)
+      return null;
     for (String s : arr) {
-      if (s != null && !s.isBlank()) return s.trim();
+      if (s != null && !s.isBlank())
+        return s.trim();
     }
     return null;
   }

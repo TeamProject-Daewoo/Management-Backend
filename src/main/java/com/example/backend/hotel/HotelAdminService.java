@@ -1,4 +1,3 @@
-// HotelAdminService.java
 package com.example.backend.hotel;
 
 import java.time.LocalDateTime;
@@ -41,10 +40,13 @@ public class HotelAdminService {
   private final PaymentRepository paymentRepo;
   private final UserRepository userRepo;
 
+  // ====================== 내부 유틸 ======================
   /** 현재 로그인 사용자 */
   private User currentUserOrThrow() {
     Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-    if (auth == null || auth.getName() == null) throw new IllegalStateException("인증 정보가 없습니다.");
+    if (auth == null || auth.getName() == null) {
+      throw new IllegalStateException("인증 정보가 없습니다.");
+    }
     return userRepo.findByUsername(auth.getName())
         .orElseThrow(() -> new IllegalStateException("사용자를 찾을 수 없습니다. username=" + auth.getName()));
   }
@@ -52,9 +54,13 @@ public class HotelAdminService {
   /** 현재 BUSINESS 사용자 검사 + BRN 반환 */
   private String currentBusinessNumberOrThrow() {
     User u = currentUserOrThrow();
-    if (u.getRole() != Role.BUSINESS) throw new IllegalStateException("BUSINESS 권한 사용자만 접근 가능합니다.");
+    if (u.getRole() != Role.BUSINESS) {
+      throw new IllegalStateException("BUSINESS 권한 사용자만 접근 가능합니다.");
+    }
     String brn = u.getBusiness_registration_number();
-    if (brn == null || brn.isBlank()) throw new IllegalStateException("사용자에 사업자번호가 없습니다.");
+    if (brn == null || brn.isBlank()) {
+      throw new IllegalStateException("사용자에 사업자번호가 없습니다.");
+    }
     return brn;
   }
 
@@ -63,7 +69,9 @@ public class HotelAdminService {
   public List<Hotel> getBusinessHotelsOrThrow() {
     String brn = currentBusinessNumberOrThrow();
     List<Hotel> hotels = hotelRepo.findAllByBusinessRegistrationNumber(brn);
-    if (hotels.isEmpty()) throw new IllegalStateException("사업자번호에 해당하는 호텔이 없습니다. brn=" + brn);
+    if (hotels.isEmpty()) {
+      throw new IllegalStateException("사업자번호에 해당하는 호텔이 없습니다. brn=" + brn);
+    }
     return hotels;
   }
 
@@ -72,71 +80,69 @@ public class HotelAdminService {
   public Hotel resolveHotelForBusiness(String contentid) {
     List<Hotel> hotels = getBusinessHotelsOrThrow();
     if (contentid == null || contentid.isBlank()) {
-      return hotels.get(0); // 기본 선택 정책: 첫 호텔
+      return hotels.get(0); // 기본 정책: 첫 호텔 선택
     }
     return hotels.stream()
         .filter(h -> contentid.equals(h.getContentid()))
         .findFirst()
-        .orElseThrow(() -> new IllegalStateException("해당 contentid의 호텔이 이 사업자 소유가 아닙니다: " + contentid));
+        .orElseThrow(() -> new IllegalStateException(
+            "해당 contentid의 호텔이 이 사업자 소유가 아닙니다: " + contentid));
   }
 
-  // ====== Public APIs ======
+  // ====================== Public APIs ======================
 
-  // 목록 조회
+  // ----- Hotel Basic -----
   @Transactional(readOnly = true)
   public List<HotelDTO> listMyHotels() {
     return getBusinessHotelsOrThrow().stream()
-        .map(h -> new HotelDTO(
-            h.getId(), h.getContentid(), h.getTitle(), h.getAddr1(),
-            h.getTel(), h.getFirstimage(), h.getMapx(), h.getMapy(), h.getBusinessRegistrationNumber()
-        )).toList();
+        .map(HotelDTO::from)
+        .toList();
   }
 
-  // ---------- Hotel Basic ----------
   @Transactional(readOnly = true)
   public HotelDTO getHotelBasic(String contentid) {
     Hotel h = resolveHotelForBusiness(contentid);
-    return new HotelDTO(
-    h.getId(), h.getContentid(), h.getTitle(), h.getAddr1(),
-    h.getTel(), h.getFirstimage(), h.getMapx(), h.getMapy(),
-    h.getBusinessRegistrationNumber()
-  );
+    return HotelDTO.from(h);
   }
 
   @Transactional
   public HotelDTO updateHotelBasic(String contentid, HotelUpdateRequest req) {
     Hotel h = resolveHotelForBusiness(contentid);
-    if (req.getTitle() != null) h.setTitle(req.getTitle());
-    if (req.getAddr1() != null) h.setAddr1(req.getAddr1());
-    if (req.getTel() != null) h.setTel(req.getTel());
-    if (req.getFirstimage() != null) h.setFirstimage(req.getFirstimage());
-    if (req.getMapx() != null) h.setMapx(req.getMapx());
-    if (req.getMapy() != null) h.setMapy(req.getMapy());
+    if (req.getTitle() != null)
+      h.setTitle(req.getTitle());
+    if (req.getAddr1() != null)
+      h.setAddr1(req.getAddr1());
+    if (req.getTel() != null)
+      h.setTel(req.getTel());
+    if (req.getFirstimage() != null)
+      h.setFirstimage(req.getFirstimage());
+    if (req.getMapx() != null)
+      h.setMapx(req.getMapx());
+    if (req.getMapy() != null)
+      h.setMapy(req.getMapy());
     hotelRepo.save(h);
     return getHotelBasic(contentid);
   }
 
-  // ---------- Hotel Intro ----------
+  // ----- Hotel Intro -----
   @Transactional(readOnly = true)
   public HotelIntroDTO getHotelIntro(String contentid) {
     String cid = resolveHotelForBusiness(contentid).getContentid();
     HotelIntro i = introRepo.findTopByContentidOrderByIdDesc(cid).orElse(null);
-    if (i == null) return null;
-    return new HotelIntroDTO(
-        i.getId(), i.getContentid(), i.getCheckintime(), i.getCheckouttime(),
-        i.getAccomcountlodging(), i.getRoomcount(), i.getRoomtype(), i.getScalelodging(),
-        i.getSubfacility(), i.getParkinglodging(), i.getSauna(), i.getFitness(),
-        i.getBarbecue(), i.getBeverage(), i.getBicycle(),
-        i.getReservationlodging(), i.getReservationurl()
-    );
+    if (i == null)
+      return null;
+    return HotelIntroDTO.from(i);
   }
 
   @Transactional
   public HotelIntroDTO upsertHotelIntro(String contentid, HotelIntroUpdateRequest r) {
     String cid = resolveHotelForBusiness(contentid).getContentid();
     HotelIntro i = introRepo.findTopByContentidOrderByIdDesc(cid)
-        .orElseGet(() -> { HotelIntro x = new HotelIntro(); x.setContentid(cid); return x; });
-
+        .orElseGet(() -> {
+          HotelIntro x = new HotelIntro();
+          x.setContentid(cid);
+          return x;
+        });
     i.setCheckintime(r.getCheckintime());
     i.setCheckouttime(r.getCheckouttime());
     i.setAccomcountlodging(r.getAccomcountlodging());
@@ -153,83 +159,73 @@ public class HotelAdminService {
     i.setReservationlodging(r.getReservationlodging());
     i.setReservationurl(r.getReservationurl());
     introRepo.save(i);
-
     return getHotelIntro(cid);
   }
 
-  // ---------- 공통: 제목 정규화 ----------
+  // ----- 공통 유틸 -----
   private String norm(String s) {
-    if (s == null) return "";
+    if (s == null)
+      return "";
     String t = s.trim().toLowerCase();
     return t.replaceAll("\\s+", " ");
   }
 
-  // ---------- Rooms ----------
+  // ----- Rooms -----
   @Transactional(readOnly = true)
   public List<RoomDTO> getRooms(String contentid) {
     String cid = resolveHotelForBusiness(contentid).getContentid();
-
-    // 최신 등록 우선(id desc)으로 받아 중복 roomtitle은 첫 개만 유지
     List<Room> all = roomRepo.findByContentidOrderByIdDesc(cid);
 
     Map<String, Room> picked = new LinkedHashMap<>();
     for (Room r : all) {
       String key = norm(r.getRoomtitle());
-      picked.putIfAbsent(key, r); // 이미 있으면 skip → 최신 것만 남음
+      picked.putIfAbsent(key, r); // 최신 것만 남김
     }
 
     return picked.values().stream()
-        .map(RoomDTO::from) // ✅ thumb/옵션 포함 일관된 DTO 변환
+        .map(RoomDTO::from)
         .toList();
   }
 
   @Transactional
   public RoomDTO createRoom(String contentid, RoomDTO dto) {
     String cid = resolveHotelForBusiness(contentid).getContentid();
-
-    // 대소문자/공백 무시 중복 검사
     if (roomRepo.existsNormalized(cid, dto.getRoomtitle())) {
       throw new IllegalStateException("이미 동일한 이름의 객실이 존재합니다: " + dto.getRoomtitle());
     }
-
-    Room r = new Room();
-    r.setContentid(cid);
-    r.setRoomcode(dto.getRoomcode());
-    r.setRoomtitle(dto.getRoomtitle());
-    r.setRoombasecount(dto.getRoombasecount());
-    r.setRoommaxcount(dto.getRoommaxcount());
-    r.setRoomcount(dto.getRoomcount());
-    r.setRoomoffseasonminfee1(dto.getRoomoffseasonminfee1());
-    r.setRoompeakseasonminfee1(dto.getRoompeakseasonminfee1());
+    Room r = dto.toEntity(cid);
     roomRepo.save(r);
-
-    return RoomDTO.from(r); // ✅ 일관성 있게 from 사용
+    return RoomDTO.from(r);
   }
 
   @Transactional
   public RoomDTO updateRoom(String contentid, Long roomId, RoomDTO dto) {
-    // contentid로 소유 검증만 수행 (room 자체는 id로 조회)
     resolveHotelForBusiness(contentid);
     Room r = roomRepo.findById(roomId).orElseThrow();
 
-    // 이름이 바뀌는 경우만 중복 검사 (정규화 기준)
-    if (dto.getRoomtitle() != null && !norm(dto.getRoomtitle()).equals(norm(r.getRoomtitle()))) {
+    if (dto.getRoomtitle() != null &&
+        !norm(dto.getRoomtitle()).equals(norm(r.getRoomtitle()))) {
       if (roomRepo.existsNormalized(r.getContentid(), dto.getRoomtitle())) {
         throw new IllegalStateException("이미 동일한 이름의 객실이 존재합니다: " + dto.getRoomtitle());
       }
       r.setRoomtitle(dto.getRoomtitle());
     }
 
-    if (dto.getRoomcode() != null) r.setRoomcode(dto.getRoomcode());
-    if (dto.getRoombasecount() != null) r.setRoombasecount(dto.getRoombasecount());
-    if (dto.getRoommaxcount() != null) r.setRoommaxcount(dto.getRoommaxcount());
-    if (dto.getRoomcount() != null) r.setRoomcount(dto.getRoomcount());
-    if (dto.getRoomoffseasonminfee1() != null) r.setRoomoffseasonminfee1(dto.getRoomoffseasonminfee1());
-    if (dto.getRoompeakseasonminfee1() != null) r.setRoompeakseasonminfee1(dto.getRoompeakseasonminfee1());
+    if (dto.getRoomcode() != null)
+      r.setRoomcode(dto.getRoomcode());
+    if (dto.getRoombasecount() != null)
+      r.setRoombasecount(dto.getRoombasecount());
+    if (dto.getRoommaxcount() != null)
+      r.setRoommaxcount(dto.getRoommaxcount());
+    if (dto.getRoomcount() != null)
+      r.setRoomcount(dto.getRoomcount());
+    if (dto.getRoomoffseasonminfee1() != null)
+      r.setRoomoffseasonminfee1(dto.getRoomoffseasonminfee1());
+    if (dto.getRoompeakseasonminfee1() != null)
+      r.setRoompeakseasonminfee1(dto.getRoompeakseasonminfee1());
 
     roomRepo.save(r);
-
-    return RoomDTO.from(r); // ✅ 일관성 있게 from 사용
+    return RoomDTO.from(r);
   }
 
   @Transactional
@@ -238,48 +234,46 @@ public class HotelAdminService {
     roomRepo.deleteById(roomId);
   }
 
-   // ---------- Reservations & Payments ----------
-@Transactional(readOnly = true)
-public List<ReservationDTO> getReservations(String contentid) {
+  // ----- Reservations & Payments -----
+  @Transactional(readOnly = true)
+  public List<ReservationDTO> getReservations(String contentid) {
     List<Reservation> reservations;
     if (contentid == null || contentid.isBlank()) {
-        reservations = getBusinessHotelsOrThrow().stream()
-            .flatMap(h -> reservationRepo.findByContentidOrderByReservationDateDesc(h.getContentid()).stream())
-            .toList();
+      reservations = getBusinessHotelsOrThrow().stream()
+          .flatMap(h -> reservationRepo.findByContentidOrderByReservationDateDesc(h.getContentid()).stream())
+          .toList();
     } else {
-        String cid = resolveHotelForBusiness(contentid).getContentid();
-        reservations = reservationRepo.findByContentidOrderByReservationDateDesc(cid);
+      String cid = resolveHotelForBusiness(contentid).getContentid();
+      reservations = reservationRepo.findByContentidOrderByReservationDateDesc(cid);
     }
 
-    // ✅ 모든 객실 한번에 로딩
     Map<String, String> roomMap = roomRepo.findAll().stream()
         .collect(Collectors.toMap(
             r -> r.getContentid() + "::" + r.getRoomcode(),
             Room::getRoomtitle,
-            (a, b) -> a
-        ));
+            (a, b) -> a));
 
     return reservations.stream()
         .map(r -> toDtoWithPayment(r, roomMap))
         .toList();
-}
+  }
 
-private ReservationDTO toDtoWithPayment(Reservation r, Map<String, String> roomMap) {
+  private ReservationDTO toDtoWithPayment(Reservation r, Map<String, String> roomMap) {
     var payments = paymentRepo.findByReservationReservationId(r.getReservationId());
 
     String payStatus = null;
     Long payId = null;
     LocalDateTime payDate = null;
     Integer payAmount = null;
+
     if (!payments.isEmpty()) {
-        var latest = payments.get(payments.size() - 1);
-        payStatus = latest.getPaymentStatus();
-        payId = latest.getPaymentId();
-        payDate = latest.getPaymentDate();
-        payAmount = latest.getPaymentAmount();
+      var latest = payments.get(payments.size() - 1);
+      payStatus = latest.getPaymentStatus();
+      payId = latest.getPaymentId();
+      payDate = latest.getPaymentDate();
+      payAmount = latest.getPaymentAmount();
     }
 
-    // ✅ key = contentid::roomcode
     String roomKey = (r.getContentid() != null && r.getRoomcode() != null)
         ? r.getContentid() + "::" + r.getRoomcode()
         : null;
@@ -296,7 +290,7 @@ private ReservationDTO toDtoWithPayment(Reservation r, Map<String, String> roomM
         r.getCheckInDate(),
         r.getCheckOutDate(),
         r.getRoomcode(),
-        roomTitle, // ✅ 항상 매핑된 객실 이름 넣기
+        roomTitle,
         r.getStatus(),
         r.getTotalPrice(),
         r.getReservationDate(),
@@ -305,18 +299,18 @@ private ReservationDTO toDtoWithPayment(Reservation r, Map<String, String> roomM
         payStatus,
         payId,
         payDate,
-        payAmount
-    );
-}
-
-
+        payAmount);
+  }
 
   @Transactional(readOnly = true)
   public List<PaymentDTO> getPaymentsForHotel(String contentid) {
     String cid = resolveHotelForBusiness(contentid).getContentid();
     List<Long> resIds = reservationRepo.findByContentidOrderByReservationDateDesc(cid).stream()
-        .map(Reservation::getReservationId).toList();
-    if (resIds.isEmpty()) return List.of();
+        .map(Reservation::getReservationId)
+        .toList();
+    if (resIds.isEmpty())
+      return List.of();
+
     return paymentRepo.findByReservationReservationIdIn(resIds).stream()
         .map(p -> new PaymentDTO(
             p.getPaymentId(),
@@ -325,33 +319,19 @@ private ReservationDTO toDtoWithPayment(Reservation r, Map<String, String> roomM
             p.getPaymentAmount(),
             p.getPaymentMethod(),
             p.getPaymentStatus(),
-            p.getPaymentDate()
-        )).toList();
+            p.getPaymentDate()))
+        .toList();
   }
 
   @Transactional
   public void processBulkReservations(String contentid, List<Long> ids, String action) {
-    String cid = resolveHotelForBusiness(contentid).getContentid();
-
+    resolveHotelForBusiness(contentid);
     switch (action) {
-        case "paidreservation": // 예약 완료 처리 (예약 상태만)
-            reservationRepo.updateStatus(ids, "PAID");
-            break;
-
-        case "paidpayment": // 결제 완료 처리 (결제 상태만)
-            paymentRepo.updatePaymentStatus(ids, "PAID");
-            break;
-
-        case "cancel":
-            reservationRepo.updateStatus(ids, "CANCELLED");
-            break;
-
-        case "refund":
-            paymentRepo.updatePaymentStatus(ids, "CANCELED");
-            break;
-
-        default:
-            throw new IllegalArgumentException("Unknown action: " + action);
+      case "paidreservation" -> reservationRepo.updateStatus(ids, "PAID");
+      case "paidpayment" -> paymentRepo.updatePaymentStatus(ids, "PAID");
+      case "cancel" -> reservationRepo.updateStatus(ids, "CANCELLED");
+      case "refund" -> paymentRepo.updatePaymentStatus(ids, "CANCELED");
+      default -> throw new IllegalArgumentException("Unknown action: " + action);
     }
   }
 
@@ -359,43 +339,73 @@ private ReservationDTO toDtoWithPayment(Reservation r, Map<String, String> roomM
   public ReservationDTO updateReservationStatus(Long id, String status) {
     Reservation reservation = reservationRepo.findById(id)
         .orElseThrow(() -> new RuntimeException("예약 없음"));
-
-    reservation.setStatus(status); // Enum이면 변환 로직 필요
+    reservation.setStatus(status);
     reservationRepo.save(reservation);
-
     return ReservationDTO.from(reservation);
   }
 
   @Transactional
-public void updatePaymentStatus(Long id, String status) {
+  public void updatePaymentStatus(Long id, String status) {
     var payment = paymentRepo.findById(id)
         .orElseThrow(() -> new RuntimeException("결제 없음"));
     payment.setPaymentStatus(status);
     paymentRepo.save(payment);
-}
+  }
 
-@Transactional
-public ReservationDTO updateReservation(Long id, ReservationDTO dto) {
+  @Transactional
+  public ReservationDTO updateReservation(Long id, ReservationDTO dto) {
     Reservation r = reservationRepo.findById(id)
-            .orElseThrow(() -> new RuntimeException("예약을 찾을 수 없습니다. id=" + id));
+        .orElseThrow(() -> new RuntimeException("예약을 찾을 수 없습니다. id=" + id));
 
-    // ✅ 예약 필드 수정
-    if (dto.getCheckInDate() != null) r.setCheckInDate(dto.getCheckInDate());
-    if (dto.getCheckOutDate() != null) r.setCheckOutDate(dto.getCheckOutDate());
-    if (dto.getNumAdults() != null) r.setNumAdults(dto.getNumAdults());
-    if (dto.getNumChildren() != null) r.setNumChildren(dto.getNumChildren());
-    if (dto.getStatus() != null) r.setStatus(dto.getStatus());
-
+    if (dto.getCheckInDate() != null)
+      r.setCheckInDate(dto.getCheckInDate());
+    if (dto.getCheckOutDate() != null)
+      r.setCheckOutDate(dto.getCheckOutDate());
+    if (dto.getNumAdults() != null)
+      r.setNumAdults(dto.getNumAdults());
+    if (dto.getNumChildren() != null)
+      r.setNumChildren(dto.getNumChildren());
+    if (dto.getStatus() != null)
+      r.setStatus(dto.getStatus());
     reservationRepo.save(r);
 
-    // ✅ 결제 상태도 같이 수정
     if (dto.getPaymentStatus() != null && dto.getPaymentId() != null) {
-        paymentRepo.findById(dto.getPaymentId()).ifPresent(p -> {
-            p.setPaymentStatus(dto.getPaymentStatus());
-            paymentRepo.save(p);
-        });
+      paymentRepo.findById(dto.getPaymentId()).ifPresent(p -> {
+        p.setPaymentStatus(dto.getPaymentStatus());
+        paymentRepo.save(p);
+      });
+    }
+    return ReservationDTO.from(r);
+  }
+
+  // ----- Hotel Register -----
+  private String generateContentId() {
+    String id;
+    do {
+      id = String.valueOf((int) (Math.random() * 9000000) + 1000000); // 7자리 난수
+    } while (hotelRepo.existsByContentid(id));
+    return id;
+  }
+
+  @Transactional
+  public HotelDTO registerHotel(HotelRegisterRequest req) {
+    String cid = generateContentId();
+
+    // 호텔
+    Hotel h = req.getHotel().toEntity();
+    h.setContentid(cid);
+    h.setBusinessRegistrationNumber(currentBusinessNumberOrThrow());
+    hotelRepo.save(h);
+
+    // 인트로
+    HotelIntro i = req.getIntro().toEntity(cid);
+    introRepo.save(i);
+
+    // 객실
+    for (RoomDTO dto : req.getRooms()) {
+      roomRepo.save(dto.toEntity(cid));
     }
 
-    return ReservationDTO.from(r);
-}
+    return HotelDTO.from(h);
+  }
 }
