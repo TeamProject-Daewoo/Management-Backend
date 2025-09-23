@@ -5,15 +5,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import software.amazon.awssdk.services.s3.presigner.S3Presigner;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
-import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
-import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.example.backend.hotel_intro.HotelIntroDTO;
 import com.example.backend.hotel_intro.HotelIntroUpdateRequest;
@@ -21,6 +23,16 @@ import com.example.backend.payment.PaymentDTO;
 import com.example.backend.reservation.BulkRequest;
 import com.example.backend.reservation.ReservationDTO;
 import com.example.backend.room.RoomDTO;
+import com.example.backend.setPrice.DeleteSpecialPriceRequestDto;
+import com.example.backend.setPrice.PriceOverrideRequestDTO;
+import com.example.backend.setPrice.PriceOverrideService;
+import com.example.backend.setPrice.SpecialPriceGroupDto;
+
+import lombok.RequiredArgsConstructor;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
+import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 
 @RestController
 @RequiredArgsConstructor
@@ -29,6 +41,7 @@ public class HotelAdminController {
 
     private final HotelAdminService svc;
     private final S3Presigner presigner;   // ✅ 주입받기
+    private final PriceOverrideService priceOverrideService;
 
     @Value("${aws.s3.bucket}")
     private String bucket;
@@ -158,5 +171,34 @@ public class HotelAdminController {
                 "url", presignedRequest.url().toString(), 
                 "publicUrl", String.format("https://%s.s3.%s.amazonaws.com/%s", bucket, region, key)
         );
+    }
+    
+	@PostMapping("/prices/override")
+    public ResponseEntity<String> createPriceOverrides(@RequestBody PriceOverrideRequestDTO requestDTO) {
+        priceOverrideService.createOrUpdatePriceOverrides(requestDTO);
+        return ResponseEntity.ok("특별가 설정이 성공적으로 저장되었습니다.");
+    }
+	
+    @GetMapping("/prices/list")
+    // [수정] Authentication 파라미터 삭제
+    public ResponseEntity<List<SpecialPriceGroupDto>> getSpecialPriceOverrides(@RequestParam(value = "contentid", required = false) String contentid
+    ) {
+        // [수정] contentid만 서비스로 전달
+        List<SpecialPriceGroupDto> specialPrices = priceOverrideService.findSpecialPricesByContentId(contentid);
+        
+        return ResponseEntity.ok(specialPrices);
+    }
+    
+    @DeleteMapping("/prices/delete")
+    public ResponseEntity<Void> deleteSpecialPriceOverride(
+            @RequestBody DeleteSpecialPriceRequestDto requestDto
+    ) {
+        priceOverrideService.deleteSpecialPriceGroup(
+            requestDto.getTitle(),
+            requestDto.getStartDate(),
+            requestDto.getEndDate(),
+            requestDto.getHotelContentId()
+        );
+        return ResponseEntity.ok().build();
     }
 }

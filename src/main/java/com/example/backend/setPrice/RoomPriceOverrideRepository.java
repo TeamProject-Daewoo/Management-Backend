@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 @Repository
 public interface RoomPriceOverrideRepository extends JpaRepository<RoomPriceOverride, Long>{
@@ -24,5 +25,12 @@ public interface RoomPriceOverrideRepository extends JpaRepository<RoomPriceOver
  // RoomPriceOverrideRepository.java
     @Query("SELECT p FROM RoomPriceOverride p WHERE p.room.id = :roomId AND p.startDate < :checkOut AND p.endDate > :checkIn")
     List<RoomPriceOverride> findAllOverlaps(@Param("roomId") Long roomId, @Param("checkIn") LocalDate checkIn, @Param("checkOut") LocalDate checkOut);
+    
+    List<RoomPriceOverride> findByRoom_Contentid(String contentid);
+    
+    @Transactional
+    void deleteByTitleAndStartDateAndEndDateAndRoom_Contentid(
+        String title, LocalDate startDate, LocalDate endDate, String contentid
+    );
 
 }
