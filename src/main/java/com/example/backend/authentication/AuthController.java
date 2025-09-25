@@ -1,6 +1,9 @@
 package com.example.backend.authentication;
 
+import java.util.Map;
+
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CookieValue;
@@ -64,5 +67,17 @@ public class AuthController {
         String newAccessToken = userService.reissueAccessToken(refreshToken);
         UserDto.AccessTokenResponse accessTokenResponse = new UserDto.AccessTokenResponse(newAccessToken);
         return ResponseEntity.ok(accessTokenResponse);
+    }
+    
+    @PostMapping("/check-username")
+    public ResponseEntity<String> checkUsername(@RequestBody Map<String, String> payload) {
+        String username = payload.get("username");
+        if (userService.isUsernameExists(username)) {
+            // 이미 존재하면 409 Conflict 에러 반환
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("이미 사용 중인 아이디입니다.");
+        } else {
+            // 존재하지 않으면 200 OK 반환
+            return ResponseEntity.ok("사용 가능한 아이디입니다.");
+        }
     }
 }

@@ -98,4 +98,9 @@ public class UserService implements UserDetailsService {
                 .orElseThrow(() -> new UsernameNotFoundException("해당 아이디를 찾을 수 없습니다."));
         return UserDto.Info.from(user);
     }
+
+    @Transactional(readOnly = true)
+    public boolean isUsernameExists(String username) {
+        return userRepository.findByUsername(username).isPresent();
+    }
 }
