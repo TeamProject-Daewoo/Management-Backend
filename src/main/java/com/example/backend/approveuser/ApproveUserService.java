@@ -25,7 +25,7 @@ public class ApproveUserService {
 	     * 사업자 사용자 '목록' 조회 (목록용 DTO 사용)
 	     */
 	    public List<ApproveUserListDto> getBusinessUsersForList() {
-	        List<ApprovalStatus> statuses = List.of(ApprovalStatus.PENDING, ApprovalStatus.APPROVED);
+	        List<ApprovalStatus> statuses = List.of(ApprovalStatus.PENDING, ApprovalStatus.APPROVED, ApprovalStatus.REJECTED);
 	        List<User> users = userRepository.findByRoleAndApprovalStatusIn(Role.BUSINESS, statuses);
 	        return users.stream()
 	                .map(ApproveUserListDto::new)
