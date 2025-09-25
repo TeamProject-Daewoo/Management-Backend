@@ -61,18 +61,19 @@ public class UserDto {
         private String username;
         private String name;
         private String phoneNumber;
+        private String businessRegistrationNumber; 
         private Role role;
         private ApprovalStatus approvalStatus;
 
-        // User 엔티티를 Info DTO로 변환하는 정적 메소드
         public static Info from(User user) {
             return Info.builder()
-                    .username(user.getUsername())
-                    .name(user.getName())
-                    .phoneNumber(user.getPhoneNumber())
-                    .role(user.getRole())
-                    .approvalStatus(user.getApprovalStatus())
-                    .build();
+                .username(user.getUsername())
+                .name(user.getName())
+                .phoneNumber(user.getPhoneNumber())
+                .businessRegistrationNumber(user.getBusiness_registration_number()) // ✅ 여기도 변경
+                .role(user.getRole())
+                .approvalStatus(user.getApprovalStatus())
+                .build();
         }
     }
 
