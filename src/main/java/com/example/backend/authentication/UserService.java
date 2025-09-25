@@ -1,5 +1,6 @@
 package com.example.backend.authentication;
 
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -83,9 +84,10 @@ public class UserService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException("해당 아이디를 찾을 수 없습니다."));
+                // 👇 1. 사용자를 찾지 못하면 BadCredentialsException 발생
+                .orElseThrow(() -> new BadCredentialsException("아이디 또는 비밀번호가 일치하지 않습니다."));
         
-        // ✨ 로그인 시 승인 상태 검증
+        // 👇 2. 사용자는 찾았지만, 계정이 잠겨있으면(승인 대기 중이면) LockedException 발생
         if (!user.isAccountNonLocked()) {
             throw new LockedException("아직 승인되지 않은 계정입니다.");
         }

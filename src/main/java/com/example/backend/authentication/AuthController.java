@@ -6,6 +6,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -28,7 +29,8 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<UserDto.AccessTokenResponse> login(@RequestBody UserDto.Login loginDto) {
+    public ResponseEntity<?> login(@RequestBody UserDto.Login loginDto) {
+    	try {
         // 1. UserService에서 토큰 정보 받아오기
         TokenInfo tokenInfo = userService.login(loginDto);
 
@@ -47,6 +49,13 @@ public class AuthController {
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
                 .body(accessTokenResponse);
+    	} catch (AuthenticationException e) {
+            // 👇 모든 인증 관련 예외(비밀번호 오류, 계정 잠금 등)를 여기서 한 번에 처리
+            // e.getMessage()를 통해 서비스에서 던진 메시지를 그대로 사용
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("로그인 중 오류가 발생했습니다.");
+        }
     }
 
     @PostMapping("/logout")
