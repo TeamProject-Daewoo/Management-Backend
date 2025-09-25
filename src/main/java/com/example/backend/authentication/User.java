@@ -72,7 +72,7 @@ public class User implements UserDetails {
         this.business_registration_number = business_registration_number;
         this.loginType = loginType;
 
-        if (role == Role.ADMIN || role == Role.BUSINESS) {
+        if (role == Role.BUSINESS) {
             this.approvalStatus = ApprovalStatus.PENDING;
         } else {
             this.approvalStatus = ApprovalStatus.APPROVED;

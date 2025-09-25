@@ -2,11 +2,10 @@ package com.example.backend.config;
 
 import java.util.List;
 
-import com.example.backend.authentication.JwtAuthenticationFilter;
-import com.example.backend.authentication.JwtTokenProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -17,6 +16,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import com.example.backend.authentication.JwtAuthenticationFilter;
+import com.example.backend.authentication.JwtTokenProvider;
 
 import lombok.RequiredArgsConstructor;
 
@@ -40,13 +42,13 @@ public class SecurityConfig {
             
             // 요청별 권한 설정
             .authorizeHttpRequests(authorize -> authorize
-                    .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                     .requestMatchers("/api/auth/**").permitAll()
+                    .requestMatchers("/api/user/**").permitAll()
                     .requestMatchers("/business/**").hasAnyRole("BUSINESS")
                     .requestMatchers("/api/business/**").hasAnyRole("BUSINESS")
-                    .requestMatchers("/admin/**").hasRole("ADMIN")
-                    // 그 외 모든 요청은 반드시 인증(로그인) 필요
-                    .anyRequest().authenticated())
+            		.requestMatchers("/api/notices/**").hasAnyRole("ADMIN_LEVEL1")
+            		.requestMatchers("/api/admin/business-users").hasAnyRole("ADMIN_LEVEL1")
+            		)
             
             // 이전에 만든 JwtAuthenticationFilter를 UsernamePasswordAuthenticationFilter 앞에 추가
             .addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class);
@@ -74,7 +76,18 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", config);
         return source;
     }
-
+    
+    @Bean
+    public RoleHierarchy roleHierarchy() {
+        RoleHierarchyImpl hierarchy = new RoleHierarchyImpl();
+        // 최고 관리자 > 중간 관리자 > 하위 관리자 > 사업자 > 일반 사용자 순서로 권한 설정
+        hierarchy.setHierarchy(
+            "ROLE_ADMIN_SUPER > ROLE_ADMIN_LEVEL2\n" +
+            "ROLE_ADMIN_LEVEL2 > ROLE_ADMIN_LEVEL1\n"
+        );
+        return hierarchy;
+    }
+    
     @Bean
     public PasswordEncoder passwordEncoder() {
         // BCrypt 암호화 알고리즘을 사용하는 PasswordEncoder를 반환
