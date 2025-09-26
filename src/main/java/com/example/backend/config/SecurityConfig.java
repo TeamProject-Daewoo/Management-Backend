@@ -4,8 +4,6 @@ import java.util.List;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
-import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -46,8 +44,10 @@ public class SecurityConfig {
                     .requestMatchers("/api/user/**").permitAll()
                     .requestMatchers("/business/**").hasAnyRole("BUSINESS")
                     .requestMatchers("/api/business/**").hasAnyRole("BUSINESS")
-            		.requestMatchers("/api/notices/**").hasAnyRole("ADMIN_LEVEL1")
-            		.requestMatchers("/api/admin/business-users").hasAnyRole("ADMIN_LEVEL1")
+            		.requestMatchers("/api/notices/**").hasAnyRole("ADMIN_CS", "ADMIN")
+            		.requestMatchers("/api/admin/business-users").hasAnyRole("ADMIN_BIZ", "ADMIN")
+            		.requestMatchers("/admin/inquiries/**").hasAnyRole("ADMIN_CS", "ADMIN")
+            		.requestMatchers("/api/admin/**").hasAnyRole("ADMIN")
             		)
             
             // 이전에 만든 JwtAuthenticationFilter를 UsernamePasswordAuthenticationFilter 앞에 추가
@@ -75,17 +75,6 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
         return source;
-    }
-    
-    @Bean
-    public RoleHierarchy roleHierarchy() {
-        RoleHierarchyImpl hierarchy = new RoleHierarchyImpl();
-        // 최고 관리자 > 중간 관리자 > 하위 관리자 > 사업자 > 일반 사용자 순서로 권한 설정
-        hierarchy.setHierarchy(
-            "ROLE_ADMIN_SUPER > ROLE_ADMIN_LEVEL2\n" +
-            "ROLE_ADMIN_LEVEL2 > ROLE_ADMIN_LEVEL1\n"
-        );
-        return hierarchy;
     }
     
     @Bean
