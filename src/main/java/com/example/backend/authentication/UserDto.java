@@ -1,5 +1,7 @@
 package com.example.backend.authentication; // 본인의 DTO 패키지 경로로 수정
 
+import java.time.LocalDateTime;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -86,4 +88,24 @@ public class UserDto {
     public static class AccessTokenResponse {
         private String accessToken;
     }
+    
+    @Data
+    @Builder
+    public static class AdminList {
+        private String username;
+        private String name;
+        private Role role;
+        private LocalDateTime createdAt;
+
+        // 👇 [핵심] User 엔티티를 AdminList DTO로 변환하는 정적 메소드
+        public static AdminList fromEntity(User user) {
+            return AdminList.builder()
+                    .username(user.getUsername())
+                    .name(user.getName())
+                    .role(user.getRole())
+                    .createdAt(user.getJoinDate()) // User 엔티티의 필드명에 맞게
+                    .build();
+        }
+    }
+    
 }

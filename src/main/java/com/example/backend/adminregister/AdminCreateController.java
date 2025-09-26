@@ -12,34 +12,42 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.backend.authentication.UserDto;
+import com.example.backend.authentication.UserDto.AdminList;
+import com.example.backend.authentication.UserService;
+
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
-public class AdminController {
-    private final AdminService adminService;
+public class AdminCreateController {
+
+    private final UserService userService;
 
     @PostMapping("/create")
     @PreAuthorize("hasRole('ROLE_ADMIN_SUPER')") // 최고 관리자만 접근 가능
-    public ResponseEntity<String> createAdmin(@RequestBody AdminDto.CreateRequest request) {
-        adminService.createAdmin(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body("관리자 계정이 성공적으로 생성되었습니다.");
+    public ResponseEntity<String> signUp(@RequestBody UserDto.SignUp signUpDto) {
+        userService.signUp(signUpDto);
+        return ResponseEntity.ok("회원가입이 성공적으로 완료되었습니다.");
     }
 
+ // 아이디 중복 확인 API
     @PostMapping("/check-id")
-    @PreAuthorize("hasRole('ROLE_ADMIN_SUPER')")
+    @PreAuthorize("hasRole('ROLE_SUPER_ADMIN')")
     public ResponseEntity<String> checkAdminId(@RequestBody Map<String, String> payload) {
-        if (adminService.checkAdminIdExists(payload.get("adminId"))) {
+        if (userService.isUsernameExists(payload.get("username"))) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("이미 사용 중인 아이디입니다.");
         }
         return ResponseEntity.ok("사용 가능한 아이디입니다.");
     }
     
+ // 관리자 목록 조회 API
     @GetMapping("/list")
-    @PreAuthorize("hasRole('ROLE_ADMIN_SUPER')") // 최고 관리자만 접근 가능
-    public ResponseEntity<List<AdminDto.Info>> getAdminList() {
-        List<AdminDto.Info> admins = adminService.getAllAdmins();
+    @PreAuthorize("hasRole('ROLE_SUPER_ADMIN')")
+    public ResponseEntity<List<AdminList>> getAdminList() {
+        // 👇 'ADMIN' 역할을 가진 모든 사용자를 찾는 로직으로 변경
+        List<AdminList> admins = userService.findUsersByRole("ADMIN");
         return ResponseEntity.ok(admins);
     }
 }

@@ -4,6 +4,6 @@ public enum Role {
     USER,
     BUSINESS,
     ADMIN,
-    ADMIN_LEVEL1,
-    ADMIN_LEVEL2
+    ADMIN_CS,
+    ADMIN_BIZ
 }

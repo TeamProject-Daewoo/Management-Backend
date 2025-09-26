@@ -1,5 +1,9 @@
 package com.example.backend.authentication;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -11,6 +15,8 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.example.backend.authentication.UserDto.AdminList;
 
 import lombok.RequiredArgsConstructor;
 
@@ -83,6 +89,7 @@ public class UserService implements UserDetailsService {
      */
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+    	System.out.println("사용자쪽 UserDetails 가 실행되었습니다");
         User user = userRepository.findByUsername(username)
                 // 👇 1. 사용자를 찾지 못하면 BadCredentialsException 발생
                 .orElseThrow(() -> new BadCredentialsException("아이디 또는 비밀번호가 일치하지 않습니다."));
@@ -104,5 +111,17 @@ public class UserService implements UserDetailsService {
     @Transactional(readOnly = true)
     public boolean isUsernameExists(String username) {
         return userRepository.findByUsername(username).isPresent();
+    }
+
+    @Transactional(readOnly = true)
+    public List<AdminList> findUsersByRole(String rolePrefix) {
+        // Role Enum 중에서 이름이 rolePrefix로 시작하는 모든 역할을 찾음
+        List<Role> roles = Arrays.stream(Role.values())
+                .filter(role -> role.name().startsWith(rolePrefix))
+                .toList();
+        
+        return userRepository.findByRoleIn(roles).stream()
+                .map(UserDto.AdminList::fromEntity)
+                .collect(Collectors.toList());
     }
 }
