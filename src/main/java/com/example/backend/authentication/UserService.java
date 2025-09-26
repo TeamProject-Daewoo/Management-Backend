@@ -1,6 +1,5 @@
 package com.example.backend.authentication;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -9,14 +8,13 @@ import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import com.example.backend.authentication.UserDto.AdminList;
 
 import lombok.RequiredArgsConstructor;
 
@@ -113,15 +111,38 @@ public class UserService implements UserDetailsService {
         return userRepository.findByUsername(username).isPresent();
     }
 
-    @Transactional(readOnly = true)
-    public List<AdminList> findUsersByRole(String rolePrefix) {
-        // Role Enum 중에서 이름이 rolePrefix로 시작하는 모든 역할을 찾음
-        List<Role> roles = Arrays.stream(Role.values())
-                .filter(role -> role.name().startsWith(rolePrefix))
-                .toList();
+    public List<UserDto.AdminList> findAllAdmins() { 
+        // 👇 검색할 모든 관리자 Role을 리스트로 정의합니다.
+        List<Role> adminRoles = List.of(
+            Role.ADMIN, 
+            Role.ADMIN_CS, 
+            Role.ADMIN_BIZ
+        );
         
-        return userRepository.findByRoleIn(roles).stream()
+        // 👇 정의한 Role 리스트를 Repository 메서드로 전달합니다.
+        List<User> admins = userRepository.findByRoleInOrderByJoinDateDesc(adminRoles);
+        
+        return admins.stream()
                 .map(UserDto.AdminList::fromEntity)
                 .collect(Collectors.toList());
+    }
+
+    @Transactional // 데이터베이스 변경이 있으므로 트랜잭션 처리
+    public void deleteUser(String username) {
+        // 1. 현재 로그인된 관리자의 정보를 가져옵니다.
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String currentUsername = authentication.getName();
+
+        // 2. 자기 자신을 삭제하려는 시도인지 확인합니다. (매우 중요)
+        if (currentUsername.equals(username)) {
+            throw new IllegalArgumentException("자기 자신의 계정은 삭제할 수 없습니다.");
+        }
+        
+        // 3. 데이터베이스에서 삭제할 사용자를 찾습니다.
+        User userToDelete = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("해당 아이디를 가진 사용자를 찾을 수 없습니다."));
+
+        // 4. 사용자를 삭제합니다.
+        userRepository.delete(userToDelete);
     }
 }

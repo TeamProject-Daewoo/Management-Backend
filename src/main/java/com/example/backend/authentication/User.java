@@ -59,9 +59,12 @@ public class User implements UserDetails {
 
     @Column(name = "business_registration_number")
     private String business_registration_number;
+    
+    @Column(name = "points")
+    private Integer points;
 
     @Builder
-    public User(String username, String password, String name, String phoneNumber, Role role, String uuid, String business_registration_number, String loginType) {
+    public User(String username, String password, String name, String phoneNumber, Role role, String uuid, String business_registration_number, String loginType, Integer points) {
         this.username = username;
         this.password = password;
         this.name = name;
@@ -71,6 +74,7 @@ public class User implements UserDetails {
         this.uuid = uuid;
         this.business_registration_number = business_registration_number;
         this.loginType = loginType;
+        this.points = points;
 
         if (role == Role.BUSINESS) {
             this.approvalStatus = ApprovalStatus.PENDING;
