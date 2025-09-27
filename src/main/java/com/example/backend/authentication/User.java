@@ -61,7 +61,7 @@ public class User implements UserDetails {
     private String business_registration_number;
     
     @Column(name = "points")
-    private Integer points;
+    private Integer points = 0;
 
     @Builder
     public User(String username, String password, String name, String phoneNumber, Role role, String uuid, String business_registration_number, String loginType, Integer points) {

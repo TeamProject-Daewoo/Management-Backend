@@ -7,7 +7,7 @@ import org.springframework.data.repository.query.Param;
 
 public interface ReservationRepository extends JpaRepository<Reservation, Long> {
 
-  List<Reservation> findByContentidOrderByReservationDateDesc(String contentid);
+  List<Reservation> findByHotel_ContentidOrderByReservationDateDesc(String contentid);
 
   @Modifying(clearAutomatically = true, flushAutomatically = true)
   @Query("update Reservation r set r.status = :status where r.reservationId in :ids")

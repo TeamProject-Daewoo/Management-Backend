@@ -69,6 +69,7 @@ public class HotelAdminService {
   public List<Hotel> getBusinessHotelsOrThrow() {
     String brn = currentBusinessNumberOrThrow();
     List<Hotel> hotels = hotelRepo.findAllByBusinessRegistrationNumber(brn);
+    System.out.println(hotels+"--------------------------------");
     if (hotels.isEmpty()) {
       throw new IllegalStateException("사업자번호에 해당하는 호텔이 없습니다. brn=" + brn);
     }
@@ -240,11 +241,11 @@ public class HotelAdminService {
     List<Reservation> reservations;
     if (contentid == null || contentid.isBlank()) {
       reservations = getBusinessHotelsOrThrow().stream()
-          .flatMap(h -> reservationRepo.findByContentidOrderByReservationDateDesc(h.getContentid()).stream())
+          .flatMap(h -> reservationRepo.findByHotel_ContentidOrderByReservationDateDesc(h.getContentid()).stream())
           .toList();
     } else {
       String cid = resolveHotelForBusiness(contentid).getContentid();
-      reservations = reservationRepo.findByContentidOrderByReservationDateDesc(cid);
+      reservations = reservationRepo.findByHotel_ContentidOrderByReservationDateDesc(cid);
     }
 
     Map<String, String> roomMap = roomRepo.findAll().stream()
@@ -274,8 +275,8 @@ public class HotelAdminService {
       payAmount = latest.getPaymentAmount();
     }
 
-    String roomKey = (r.getContentid() != null && r.getRoomcode() != null)
-        ? r.getContentid() + "::" + r.getRoomcode()
+    String roomKey = (r.getHotel().getContentid() != null && r.getRoomcode() != null)
+        ? r.getHotel().getContentid() + "::" + r.getRoomcode()
         : null;
     String roomTitle = roomKey != null ? roomMap.get(roomKey) : null;
 
@@ -305,7 +306,7 @@ public class HotelAdminService {
   @Transactional(readOnly = true)
   public List<PaymentDTO> getPaymentsForHotel(String contentid) {
     String cid = resolveHotelForBusiness(contentid).getContentid();
-    List<Long> resIds = reservationRepo.findByContentidOrderByReservationDateDesc(cid).stream()
+    List<Long> resIds = reservationRepo.findByHotel_ContentidOrderByReservationDateDesc(cid).stream()
         .map(Reservation::getReservationId)
         .toList();
     if (resIds.isEmpty())

@@ -4,6 +4,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import com.example.backend.authentication.User;
+import com.example.backend.hotel.Hotel;
+
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,9 +21,9 @@ public class Reservation {
   @Column(name = "reservation_id")
   private Long reservationId;
 
-  // ✅ FK → hotels.contentid (varchar). 타입을 String으로 맞춤
-  @Column(name = "contentid")
-  private String contentid;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "contentid")
+  private Hotel hotel;
 
   @Column(name = "roomcode")
   private String roomcode;

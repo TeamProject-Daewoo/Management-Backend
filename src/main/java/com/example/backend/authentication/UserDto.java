@@ -25,6 +25,7 @@ public class UserDto {
         private String loginType;
         private String uuid;
         private Role role;
+        private Integer point;
 
         // DTO를 User 엔티티로 변환하는 메소드
         public User toEntity(String encodedPassword) {
@@ -37,6 +38,7 @@ public class UserDto {
                     .loginType(this.loginType)
                     .uuid(this.uuid)
                     .role(this.role)
+                    .points(0)
                     .build();
         }
     }
