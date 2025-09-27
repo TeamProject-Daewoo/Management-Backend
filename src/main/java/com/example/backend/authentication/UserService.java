@@ -114,7 +114,7 @@ public class UserService implements UserDetailsService {
     public List<UserDto.AdminList> findAllAdmins() { 
         // 👇 검색할 모든 관리자 Role을 리스트로 정의합니다.
         List<Role> adminRoles = List.of(
-            Role.ADMIN, 
+            Role.ADMIN_SUPER, 
             Role.ADMIN_CS, 
             Role.ADMIN_BIZ
         );

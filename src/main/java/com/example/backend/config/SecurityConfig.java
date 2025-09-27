@@ -42,13 +42,13 @@ public class SecurityConfig {
             .authorizeHttpRequests(authorize -> authorize
                     .requestMatchers("/api/auth/**").permitAll()
                     .requestMatchers("/api/user/**").permitAll()
-                    .requestMatchers("/api/reviews/**").hasAnyRole("BUSINESS", "ADMIN")
+                    .requestMatchers("/api/reviews/**").hasAnyRole("BUSINESS", "ADMIN_SUPER")
                     .requestMatchers("/business/**").hasAnyRole("BUSINESS")
                     .requestMatchers("/api/business/**").hasAnyRole("BUSINESS")
-            		.requestMatchers("/api/notices/**").hasAnyRole("ADMIN_CS", "ADMIN")
-            		.requestMatchers("/api/admin/business-users").hasAnyRole("ADMIN_BIZ", "ADMIN")
-            		.requestMatchers("/admin/inquiries/**").hasAnyRole("ADMIN_CS", "ADMIN")
-            		.requestMatchers("/api/admin/**").hasAnyRole("ADMIN")
+            		.requestMatchers("/api/notices/**").hasAnyRole("ADMIN_CS", "ADMIN_SUPER")
+            		.requestMatchers("/api/admin/business-users").hasAnyRole("ADMIN_BIZ", "ADMIN_SUPER")
+            		.requestMatchers("/admin/inquiries/**").hasAnyRole("ADMIN_CS", "ADMIN_SUPER")
+            		.requestMatchers("/api/admin/**").hasAnyRole("ADMIN_SUPER")
             		)
             
             // 이전에 만든 JwtAuthenticationFilter를 UsernamePasswordAuthenticationFilter 앞에 추가

@@ -26,6 +26,6 @@ public class UserInquiryDto {
 
     // 필요시: admin 여부 확인용 헬퍼 메서드
     public boolean isAdmin() {
-        return this.role == Role.ADMIN;
+    	return this.role.name().startsWith("ADMIN_");
     }
 }

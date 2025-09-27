@@ -28,7 +28,7 @@ public class AdminCreateController {
     private final UserService userService;
 
     @PostMapping("/create")
-    @PreAuthorize("hasRole('ROLE_ADMIN')") // 최고 관리자만 접근 가능
+    @PreAuthorize("hasRole('ROLE_ADMIN_SUPER')") // 최고 관리자만 접근 가능
     public ResponseEntity<String> signUp(@RequestBody UserDto.SignUp signUpDto) {
         userService.signUp(signUpDto);
         return ResponseEntity.ok("회원가입이 성공적으로 완료되었습니다.");
@@ -36,7 +36,7 @@ public class AdminCreateController {
 
  // 아이디 중복 확인 API
     @PostMapping("/check-id")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN_SUPER')")
     public ResponseEntity<String> checkAdminId(@RequestBody Map<String, String> payload) {
         if (userService.isUsernameExists(payload.get("username"))) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("이미 사용 중인 아이디입니다.");
@@ -46,7 +46,7 @@ public class AdminCreateController {
     
  // 관리자 목록 조회 API
     @GetMapping("/list")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN_SUPER')")
     public ResponseEntity<List<AdminList>> getAdminList() {
         // 👇 'ADMIN' 역할을 가진 모든 사용자를 찾는 로직으로 변경
         List<AdminList> admins = userService.findAllAdmins();
@@ -54,7 +54,7 @@ public class AdminCreateController {
     }
     
     @DeleteMapping("/delete/{username}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN_SUPER')")
     public ResponseEntity<String> deleteAdmin(@PathVariable String username) {
         try {
             userService.deleteUser(username);
