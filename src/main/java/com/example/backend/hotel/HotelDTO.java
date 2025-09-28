@@ -17,8 +17,8 @@ public class HotelDTO {
   private String firstimage;
   private String mapx;
   private String mapy;
-  private String areaCode;
-  private String sigunguCode;
+  private Integer areaCode;
+  private Integer sigunguCode;
   private String category;
   private String businessRegistrationNumber;
 

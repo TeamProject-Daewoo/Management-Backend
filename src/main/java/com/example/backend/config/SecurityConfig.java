@@ -43,7 +43,7 @@ public class SecurityConfig {
                     .requestMatchers("/api/auth/**").permitAll()
                     .requestMatchers("/api/user/**").permitAll()
                     .requestMatchers("/api/reviews/**").hasAnyRole("BUSINESS", "ADMIN_SUPER")
-                    .requestMatchers("/business/**").hasAnyRole("BUSINESS")
+                    .requestMatchers("/business/**").hasAnyRole("BUSINESS", "ADMIN_SUPER")
                     .requestMatchers("/api/business/**").hasAnyRole("BUSINESS")
             		.requestMatchers("/api/notices/**").hasAnyRole("ADMIN_CS", "ADMIN_SUPER")
             		.requestMatchers("/api/admin/business-users").hasAnyRole("ADMIN_BIZ", "ADMIN_SUPER")

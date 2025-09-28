@@ -1,7 +1,6 @@
 package com.example.backend.review;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Param;

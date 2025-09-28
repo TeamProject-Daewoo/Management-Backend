@@ -31,7 +31,7 @@ import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-public class HotelAdminService {
+public class HotelBusinessService {
 
   private final HotelRepository hotelRepo;
   private final HotelIntroRepository introRepo;

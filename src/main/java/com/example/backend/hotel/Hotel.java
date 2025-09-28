@@ -23,7 +23,7 @@ public class Hotel {
   private String addr1;
 
   @Column(name = "area_code")
-  private String areaCode;
+  private Integer areaCode;
 
   @Column(name = "category")
   private String category;
@@ -38,7 +38,7 @@ public class Hotel {
   private String mapy;
 
   @Column(name = "sigungu_code")
-  private String sigunguCode;
+  private Integer sigunguCode;
 
   @Column(name = "tel")
   private String tel;

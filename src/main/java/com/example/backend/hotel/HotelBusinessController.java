@@ -29,9 +29,9 @@ import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignReques
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/business")
-public class HotelAdminController {
+public class HotelBusinessController {
 
-    private final HotelAdminService svc;
+    private final HotelBusinessService svc;
     private final S3Presigner presigner;
     private final PriceOverrideService priceOverrideService;
 
