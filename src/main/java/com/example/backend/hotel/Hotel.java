@@ -5,9 +5,9 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@Table(name = "hotels")
 @Getter
 @Setter
+@Table(name = "HOTELS")
 public class Hotel {
 
   // ✅ 스키마상 PK는 contentid(varchar)
