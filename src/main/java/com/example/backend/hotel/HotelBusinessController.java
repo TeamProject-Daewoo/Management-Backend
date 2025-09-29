@@ -28,7 +28,7 @@ import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignReques
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/business")
+@RequestMapping("/api/business")
 public class HotelBusinessController {
 
     private final HotelBusinessService svc;

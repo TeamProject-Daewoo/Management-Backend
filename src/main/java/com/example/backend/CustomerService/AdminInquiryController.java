@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Value;
 
 @RestController
-@RequestMapping("/admin/inquiries")
+@RequestMapping("api/admin/inquiries")
 @RequiredArgsConstructor
 public class AdminInquiryController {
 
