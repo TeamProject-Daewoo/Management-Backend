@@ -36,8 +36,8 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
             "WHERE r.isDeleted = :show " +
             "AND (" +
             ":#{#searchTerm == null || #searchTerm.isEmpty()} = TRUE OR " +
-            "r.content LIKE CONCAT(:searchTerm, '%') OR " +
-            "r.contentChosung LIKE CONCAT(:searchTerm, '%') " + 
+            "r.content LIKE CONCAT('%', :searchTerm, '%') OR " +
+            "r.contentChosung LIKE CONCAT('%', :searchTerm, '%') " + 
             ") "+ 
             "ORDER BY r.createdAt DESC")
     List<Review> findAllViewable(@Param("show") boolean show, @Param("searchTerm") String searchTerm);
@@ -47,8 +47,8 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
             "AND (r.isDeleted = FALSE) " +
             "AND (" +
             ":#{#searchTerm == null || #searchTerm.isEmpty()} = TRUE OR " +
-            "r.content LIKE CONCAT(:searchTerm, '%') OR " +
-            "r.contentChosung LIKE CONCAT(:searchTerm, '%') " + 
+            "r.content LIKE CONCAT('%', :searchTerm, '%') OR " +
+            "r.contentChosung LIKE CONCAT('%', :searchTerm, '%') " + 
             ") "+ 
             "ORDER BY r.createdAt DESC")
     List<Review> findByContentIdWithKeyword(@Param("hotelId") String hotelId, @Param("searchTerm") String searchTerm);
@@ -68,8 +68,8 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
             "AND (r.isDeleted = FALSE) " +
             "AND (" +
             ":#{#searchTerm == null || #searchTerm.isEmpty()} = TRUE OR " +     
-            "r.content LIKE CONCAT(:searchTerm, '%') OR " +
-            "r.contentChosung LIKE :searchTerm || '%' " + 
+            "r.content LIKE CONCAT('%', :searchTerm, '%') OR " +
+            "r.contentChosung LIKE CONCAT('%', :searchTerm, '%') " + 
             ") "+ 
             "ORDER BY r.createdAt DESC")
     List<Review> findAllReportedList(@Param("searchTerm") String searchTerm);
