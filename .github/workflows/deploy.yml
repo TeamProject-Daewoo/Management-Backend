@@ -24,6 +24,9 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
+      - name: Build backend project with Maven
+        run: mvn clean package -DskipTests
+
       - name: Create .env.production file
         run: |
           echo "VITE_API_URL=" >> .env.production
