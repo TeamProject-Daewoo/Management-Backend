@@ -1,8 +1,8 @@
-name: Build and Push Frontend Image, then Dispatch
+name: Build and Push Management Backend Image, then Dispatch
 
 on:
   push:
-    branches: [ "main" ] # main 브랜치에 코드가 push될 때 실행
+    branches: [ "main" ]
 
 jobs:
   build-and-dispatch:
@@ -24,35 +24,24 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Build backend project with Maven
+      # 3. Maven으로 프로젝트 빌드하여 .jar 파일 생성
+      - name: Build with Maven
         run: mvn clean package -DskipTests
 
-      - name: Create .env.production file
-        run: |
-          echo "VITE_API_URL=" >> .env.production
-          echo "VITE_BACK_ADMIN_URL=" >> .env.production
-          echo "VITE_API_URL_ADMIN=" >> .env.production
-          echo "VITE_HOMPAGE_MAIN=" >> .env.production
-          echo "VITE_BUS_URL=" >> .env.production
-          # 민감한 정보는 GitHub Secrets에서 가져오기
-          echo "VITE_KAKAO_JAVASCRIPT_KEY=${{ secrets.VITE_KAKAO_JAVASCRIPT_KEY }}" >> .env.production
-          echo "VITE_KAKAO_RESTAPI_KEY=${{ secrets.VITE_KAKAO_RESTAPI_KEY }}" >> .env.production
-          echo "VITE_KAKAO_MAP_APPKEY=${{ secrets.VITE_KAKAO_MAP_APPKEY }}" >> .env.production
-
-      # 3. Docker 이미지 빌드 및 ECR에 Push
-      - name: Build and push frontend image
+      # 4. Docker 이미지 빌드 및 ECR에 Push
+      - name: Build and push image
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: management-backend
+          ECR_REPOSITORY: management-backend # ECR 리포지토리 이름
           IMAGE_TAG: latest
         run: |
           docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
-      # 4. 백엔드 레포지토리에 배포 신호(dispatch) 보내기
-      - name: Trigger deployment in backend repository
+      # 5. user-backend 레포지토리에 배포 신호 보내기
+      - name: Trigger deployment
         uses: peter-evans/repository-dispatch@v2
         with:
           token: ${{ secrets.ACCESS_TOKEN }}
-          repository: TeamProject-Daewoo/Hotel_booking_backend
+          repository: TeamProject-Daewoo/Hotel_booking_backend # 👈 배포 총괄 레포지토리
           event-type: deploy-trigger
