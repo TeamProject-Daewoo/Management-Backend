@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import com.example.backend.authentication.User;
+import com.example.backend.coupon.entity.Coupon;
 import com.example.backend.hotel.Hotel;
 
 import jakarta.persistence.*;
@@ -54,6 +55,13 @@ public class Reservation {
 
   @Column(name = "reserv_phone")
   private String reservPhone;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "used_coupon_id")
+  private Coupon usedCoupon;
+
+  @Column(name = "used_points")
+  private Integer usedPoints;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "user_name", referencedColumnName = "user_name")

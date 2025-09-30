@@ -6,7 +6,11 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 
+import com.example.backend.reservation.Reservation;
+
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
+
+  Optional<Payment> findByReservation(Reservation reservation);
 
   List<Payment> findByReservationReservationId(Long reservationId);
 

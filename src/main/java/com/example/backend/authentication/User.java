@@ -61,7 +61,7 @@ public class User implements UserDetails {
     private String business_registration_number;
     
     @Column(name = "points")
-    private Integer points = 0;
+    private Integer point = 0;
 
     @Builder
     public User(String username, String password, String name, String phoneNumber, Role role, String uuid, String business_registration_number, String loginType, Integer points) {
@@ -74,7 +74,7 @@ public class User implements UserDetails {
         this.uuid = uuid;
         this.business_registration_number = business_registration_number;
         this.loginType = loginType;
-        this.points = points;
+        this.point = points;
 
         if (role == Role.BUSINESS) {
             this.approvalStatus = ApprovalStatus.PENDING;
@@ -117,5 +117,12 @@ public class User implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    public void addPoints(int pointsToAdd) {
+        if (pointsToAdd < 0) {
+            throw new IllegalArgumentException("포인트는 음수일 수 없습니다.");
+        }
+        this.point += pointsToAdd;
     }
 }
