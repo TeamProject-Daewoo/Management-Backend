@@ -69,6 +69,7 @@ public class SecurityConfig {
         
         config.setAllowCredentials(true);
         config.setAllowedOrigins(List.of(
+                "http://15.165.135.19",
         		"http://localhost:7000", 
                 "http://127.0.0.1:7000",
                 "http://localhost:5174",
