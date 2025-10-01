@@ -69,7 +69,6 @@ public class HotelBusinessService {
   public List<Hotel> getBusinessHotelsOrThrow() {
     String brn = currentBusinessNumberOrThrow();
     List<Hotel> hotels = hotelRepo.findAllByBusinessRegistrationNumber(brn);
-    System.out.println(hotels+"--------------------------------");
     if (hotels.isEmpty()) {
       throw new IllegalStateException("사업자번호에 해당하는 호텔이 없습니다. brn=" + brn);
     }
@@ -203,7 +202,7 @@ public class HotelBusinessService {
   public RoomDTO updateRoom(String contentid, Long roomId, RoomDTO dto) {
     resolveHotelForBusiness(contentid);
     Room r = roomRepo.findById(roomId).orElseThrow();
-
+    System.out.println(dto+"-----------------------------------");
     if (dto.getRoomtitle() != null &&
         !norm(dto.getRoomtitle()).equals(norm(r.getRoomtitle()))) {
       if (roomRepo.existsNormalized(r.getContentid(), dto.getRoomtitle())) {
@@ -212,19 +211,44 @@ public class HotelBusinessService {
       r.setRoomtitle(dto.getRoomtitle());
     }
 
-    if (dto.getRoomcode() != null)
-      r.setRoomcode(dto.getRoomcode());
-    if (dto.getRoombasecount() != null)
-      r.setRoombasecount(dto.getRoombasecount());
-    if (dto.getRoommaxcount() != null)
-      r.setRoommaxcount(dto.getRoommaxcount());
-    if (dto.getRoomcount() != null)
-      r.setRoomcount(dto.getRoomcount());
-    if (dto.getRoomoffseasonminfee1() != null)
-      r.setRoomoffseasonminfee1(dto.getRoomoffseasonminfee1());
-    if (dto.getRoompeakseasonminfee1() != null)
-      r.setRoompeakseasonminfee1(dto.getRoompeakseasonminfee1());
+     if (dto.getRoomcode() != null) r.setRoomcode(dto.getRoomcode());
+    if (dto.getRoombasecount() != null) r.setRoombasecount(dto.getRoombasecount());
+    if (dto.getRoommaxcount() != null) r.setRoommaxcount(dto.getRoommaxcount());
+    if (dto.getRoomcount() != null) r.setRoomcount(dto.getRoomcount());
+    
+    // 3-2. 가격 정보 (누락 필드 추가)
+    if (dto.getRoomoffseasonminfee1() != null) r.setRoomoffseasonminfee1(dto.getRoomoffseasonminfee1());
+    if (dto.getRoomoffseasonminfee2() != null) r.setRoomoffseasonminfee2(dto.getRoomoffseasonminfee2()); 
+    if (dto.getRoompeakseasonminfee1() != null) r.setRoompeakseasonminfee1(dto.getRoompeakseasonminfee1());
+    if (dto.getRoompeakseasonminfee2() != null) r.setRoompeakseasonminfee2(dto.getRoompeakseasonminfee2()); 
 
+    // 3-3. 크기 및 소개 (누락 필드 추가)
+    if (dto.getRoomsize1() != null) r.setRoomsize1(dto.getRoomsize1()); 
+    if (dto.getRoomsize2() != null) r.setRoomsize2(dto.getRoomsize2()); 
+    if (dto.getRoomintro() != null) r.setRoomintro(dto.getRoomintro()); 
+
+    // 3-4. 이미지 URL (누락 필드 추가)
+    if (dto.getRoomimg1() != null) r.setRoomimg1(dto.getRoomimg1()); 
+    if (dto.getRoomimg2() != null) r.setRoomimg2(dto.getRoomimg2()); 
+    if (dto.getRoomimg3() != null) r.setRoomimg3(dto.getRoomimg3()); 
+    if (dto.getRoomimg4() != null) r.setRoomimg4(dto.getRoomimg4()); 
+    if (dto.getRoomimg5() != null) r.setRoomimg5(dto.getRoomimg5()); 
+
+    // 3-5. 옵션 (누락된 모든 옵션 필드 추가)
+    if (dto.getRoomaircondition() != null) r.setRoomaircondition(dto.getRoomaircondition()); 
+    if (dto.getRoombath() != null) r.setRoombath(dto.getRoombath());                    
+    if (dto.getRoombathfacility() != null) r.setRoombathfacility(dto.getRoombathfacility());
+    if (dto.getRoomcable() != null) r.setRoomcable(dto.getRoomcable());           
+    if (dto.getRoomcook() != null) r.setRoomcook(dto.getRoomcook());                      
+    if (dto.getRoomhairdryer() != null) r.setRoomhairdryer(dto.getRoomhairdryer());     
+    if (dto.getRoomhometheater() != null) r.setRoomhometheater(dto.getRoomhometheater());   
+    if (dto.getRoominternet() != null) r.setRoominternet(dto.getRoominternet());          
+    if (dto.getRoompc() != null) r.setRoompc(dto.getRoompc());                  
+    if (dto.getRoomrefrigerator() != null) r.setRoomrefrigerator(dto.getRoomrefrigerator());
+    if (dto.getRoomsofa() != null) r.setRoomsofa(dto.getRoomsofa());               
+    if (dto.getRoomtable() != null) r.setRoomtable(dto.getRoomtable());               
+    if (dto.getRoomtoiletries() != null) r.setRoomtoiletries(dto.getRoomtoiletries());     
+    if (dto.getRoomtv() != null) r.setRoomtv(dto.getRoomtv());
     roomRepo.save(r);
     return RoomDTO.from(r);
   }
