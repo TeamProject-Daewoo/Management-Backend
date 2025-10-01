@@ -1,31 +1,27 @@
 package com.example.backend.CustomerService;
 
 import com.example.backend.authentication.Role;
-
-import jakarta.persistence.*;
 import lombok.*;
 
-@Entity
-@Table(name = "users")  // DB 테이블 이름은 그대로 유지해야 함
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class UserInquiryDto {
-
-    @Id
-    @Column(name = "user_name")
     private String username;
-
-    @Column(name = "name")
     private String name;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "role")
     private Role role;
 
-    // 필요시: admin 여부 확인용 헬퍼 메서드
     public boolean isAdmin() {
-    	return this.role.name().startsWith("ADMIN_");
+        return this.role != null && this.role.name().startsWith("ADMIN_");
+    }
+
+    // 정적 팩토리 메서드로 Entity → DTO 변환
+    public static UserInquiryDto from(com.example.backend.authentication.User user) {
+        return UserInquiryDto.builder()
+                .username(user.getUsername())
+                .name(user.getName())
+                .role(user.getRole())
+                .build();
     }
 }

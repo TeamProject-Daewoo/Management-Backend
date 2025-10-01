@@ -3,7 +3,7 @@ package com.example.backend.CustomerService;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
-
+import com.example.backend.authentication.User;
 
 @Entity
 @Getter
@@ -25,7 +25,7 @@ public class InquiryAnswer {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "admin_username", referencedColumnName = "user_name", nullable = false)
-    private UserInquiryDto adminUser;
+    private User adminUser;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "inquiry_id", unique = true)
@@ -40,11 +40,11 @@ public class InquiryAnswer {
         this.answeredAt = answeredAt;
     }
 
-    public void setAdminUser(UserInquiryDto adminUser) {
+    public void setAdminUser(User adminUser) {
         this.adminUser = adminUser;
     }
 
-    public static InquiryAnswer create(Inquiry inquiry, String answerContent, UserInquiryDto adminUser) {
+    public static InquiryAnswer create(Inquiry inquiry, String answerContent, User adminUser) {
         return InquiryAnswer.builder()
                 .inquiry(inquiry)
                 .answerContent(answerContent)

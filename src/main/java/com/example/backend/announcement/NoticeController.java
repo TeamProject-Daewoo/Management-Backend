@@ -17,7 +17,13 @@
 
         private final NoticeService noticeService;
 
+        
+@GetMapping
+    public List<NoticeDTO> getAllNotices() {
+        return noticeService.getAllNotices();
+    }
       
+    
 @GetMapping("/paged")
 public ResponseEntity<Page<NoticeDTO>> getNoticesPaged(
         @RequestParam int page,
