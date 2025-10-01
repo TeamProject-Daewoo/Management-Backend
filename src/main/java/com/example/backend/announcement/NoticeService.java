@@ -67,4 +67,20 @@ public class NoticeService {
                 .createdAt(notice.getCreatedAt())
                 .build();
     }
+
+      public List<NoticeDTO> getAllNotices() {
+        return noticeRepository.findAll().stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+       private NoticeDTO convertToDTO(Notice notice) {
+        return NoticeDTO.builder()
+                .id(notice.getId())
+                .category(notice.getCategory())
+                .title(notice.getTitle())
+                .content(notice.getContent())
+                .createdAt(notice.getCreatedAt())
+                .build();
+    }
 }

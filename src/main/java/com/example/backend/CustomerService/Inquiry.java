@@ -5,6 +5,7 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import com.example.backend.authentication.*;
 
 @Entity
 @Getter
@@ -32,23 +33,24 @@ public class Inquiry {
     private LocalDateTime createdAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "username", referencedColumnName = "user_name", nullable = false)
-    private UserInquiryDto user;
+@JoinColumn(name = "username", referencedColumnName = "user_name", nullable = false)
+private User user;
+
 
     @OneToMany(mappedBy = "inquiry", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<InquiryFile> inquiryFiles = new ArrayList<>();
 
     // 생성자 헬퍼 (첨부파일 관련 파라미터는 따로 처리)
-    public static Inquiry create(String category, String title, String content, UserInquiryDto user) {
-        return Inquiry.builder()
-                .category(category)
-                .title(title)
-                .content(content)
-                .status(InquiryStatus.PENDING)
-                .createdAt(LocalDateTime.now())
-                .user(user)
-                .build();
-    }
+    public static Inquiry create(String category, String title, String content, User user) {
+    return Inquiry.builder()
+            .category(category)
+            .title(title)
+            .content(content)
+            .status(InquiryStatus.PENDING)
+            .createdAt(LocalDateTime.now())
+            .user(user)
+            .build();
+}
 
     public void markAsAnswered() {
         this.status = InquiryStatus.ANSWERED;
