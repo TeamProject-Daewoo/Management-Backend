@@ -3,11 +3,13 @@ package com.example.backend.room;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 @Entity
 @Table(name = "rooms")
 @Getter
 @Setter
+@ToString
 public class Room {
 
   @Id
@@ -33,10 +35,15 @@ public class Room {
   private String roomintro;
 
   // 이미지
+  @Column(name = "roomimg1", length = 512)
   private String roomimg1;
+  @Column(name = "roomimg2", length = 512)
   private String roomimg2;
+  @Column(name = "roomimg3", length = 512)
   private String roomimg3;
+  @Column(name = "roomimg4", length = 512)
   private String roomimg4;
+  @Column(name = "roomimg5", length = 512)
   private String roomimg5;
 
   // 옵션
