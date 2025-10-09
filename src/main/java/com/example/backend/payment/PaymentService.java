@@ -44,7 +44,6 @@ public class PaymentService {
         if (!"PAID".equals(reservation.getStatus())) {
             throw new IllegalStateException("결제가 완료된 예약만 취소할 수 있습니다.");
         }
-        System.out.println("1-----------------------");
 
         LocalDate today = LocalDate.now();
         LocalDate checkInDate = reservation.getCheckInDate();
@@ -53,11 +52,9 @@ public class PaymentService {
             throw new IllegalStateException("체크인 날짜가 지났거나 당일인 예약은 취소할 수 없습니다.");
         }
 
-        System.out.println("2-----------------------");
         Payment payment = paymentRepository.findByReservation(reservation)
                 .orElseThrow(() -> new IllegalArgumentException("결제 정보를 찾을 수 없습니다."));
 
-                System.out.println("3-----------------------");
         long daysBeforeCheckIn = ChronoUnit.DAYS.between(today, checkInDate);
         int originalAmount = payment.getPaymentAmount();
         int cancelFee = calculateCancelFee(originalAmount, daysBeforeCheckIn);
@@ -80,10 +77,7 @@ public class PaymentService {
         
         try {
             
-            System.out.println("4-----------------------");
             restTemplate.postForObject(url, request, Map.class);
-            
-            System.out.println("5-----------------------");
 
             if (reservation.getUsedPoints() != null && reservation.getUsedPoints() > 0) {
                 User user = reservation.getUser();
