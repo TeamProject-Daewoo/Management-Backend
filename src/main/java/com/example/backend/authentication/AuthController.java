@@ -2,16 +2,22 @@ package com.example.backend.authentication;
 
 import java.util.Map;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
 
 import lombok.RequiredArgsConstructor;
 
@@ -22,6 +28,31 @@ public class AuthController {
 
     private final UserService userService;
 
+    @Value("${recaptcha.secret-key}")
+    private String recaptchaSecretKey;
+
+    private boolean verifyRecaptchaToken(String token) {
+        String verifyUrl = "https://www.google.com/recaptcha/api/siteverify";
+
+        RestTemplate restTemplate = new RestTemplate();
+        MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
+        body.add("secret", recaptchaSecretKey);
+        body.add("response", token);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
+
+        try {
+            ResponseEntity<Map> response = restTemplate.postForEntity(verifyUrl, request, Map.class);
+            Map<String, Object> responseBody = response.getBody();
+            return (Boolean) responseBody.get("success");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     @PostMapping("/sign-up")
     public ResponseEntity<String> signUp(@RequestBody UserDto.SignUp signUpDto) {
         userService.signUp(signUpDto);
@@ -31,6 +62,11 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody UserDto.Login loginDto) {
     	try {
+        System.out.println(loginDto.getRecaptchaToken());
+        boolean verified = verifyRecaptchaToken((String) loginDto.getRecaptchaToken());
+        if (!verified) {
+            return ResponseEntity.badRequest().body("reCAPTCHA failed");
+        }
         // 1. UserService에서 토큰 정보 받아오기
         TokenInfo tokenInfo = userService.login(loginDto);
 
