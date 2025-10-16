@@ -34,13 +34,22 @@ public class ReservationDTO {
   private Integer numAdults;
   private Integer numChildren;
 
-  // ✅ 결제 관련 필드 추가
+  // ✅ 결제 관련 필드
   private String paymentStatus;
   private Long paymentId;
   private LocalDateTime paymentDate;
   private Integer paymentAmount;
+
+  // ✅ NEW: 프론트에서 호텔 매핑 없이 바로 쓰도록 contentId/호텔명 추가
+  private String contentId;   // 호텔 contentid
+  private String hotelTitle;  // 호텔명
+
   public static ReservationDTO from(Reservation r) {
     if (r == null) return null;
+
+    // ✅ NEW: contentId / hotelTitle도 같이 채워줌
+    String cid = (r.getHotel() != null) ? r.getHotel().getContentid() : null;
+    String htitle = (r.getHotel() != null) ? r.getHotel().getTitle() : null;
 
     return new ReservationDTO(
         r.getReservationId(),
@@ -53,16 +62,18 @@ public class ReservationDTO {
         r.getCheckInDate(),
         r.getCheckOutDate(),
         r.getRoomcode(),
-        null,                                                     // roomtitle은 HotelAdminService.toDtoWithPayment에서 보강됨
+        null,                                                     // roomtitle은 Service에서 보강 가능
         r.getStatus(),
         r.getTotalPrice(),
         r.getReservationDate(),
         r.getNumAdults(),
         r.getNumChildren(),
-        null,                                                     // paymentStatus (service에서 세팅)
+        null,                                                     // paymentStatus
         null,                                                     // paymentId
         null,                                                     // paymentDate
-        null                                                      // paymentAmount
+        null,                                                     // paymentAmount
+        cid,                                                      // ✅ NEW: contentId
+        htitle                                                    // ✅ NEW: hotelTitle
     );
-}
+  }
 }

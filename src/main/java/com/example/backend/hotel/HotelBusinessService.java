@@ -305,6 +305,9 @@ public class HotelBusinessService {
         : null;
     String roomTitle = roomKey != null ? roomMap.get(roomKey) : null;
 
+    String contentId = r.getHotel() != null ? r.getHotel().getContentid() : null;
+    String hotelTitle = r.getHotel() != null ? r.getHotel().getTitle() : null;
+
     return new ReservationDTO(
         r.getReservationId(),
         r.getUser() != null ? r.getUser().getUsername() : null,
@@ -325,7 +328,10 @@ public class HotelBusinessService {
         payStatus,
         payId,
         payDate,
-        payAmount);
+        payAmount,
+        contentId,
+        hotelTitle
+        );
   }
 
   @Transactional(readOnly = true)
