@@ -1,5 +1,6 @@
 package com.example.backend.hotel;
 
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -404,10 +405,11 @@ public class HotelBusinessService {
   }
 
   // ----- Hotel Register -----
+  private static final SecureRandom SECURE_RANDOM = new SecureRandom();
   private String generateContentId() {
     String id;
     do {
-      id = String.valueOf((int) (Math.random() * 9000000) + 1000000); // 7자리 난수
+      id = String.valueOf((int)(SECURE_RANDOM.nextInt(9000000) + 1000000)); // 7자리 난수
     } while (hotelRepo.existsByContentid(id));
     return id;
   }
