@@ -109,18 +109,12 @@ public class HotelBusinessService {
   @Transactional
   public HotelDTO updateHotelBasic(String contentid, HotelUpdateRequest req) {
     Hotel h = resolveHotelForBusiness(contentid);
-    if (req.getTitle() != null)
-      h.setTitle(req.getTitle());
-    if (req.getAddr1() != null)
-      h.setAddr1(req.getAddr1());
-    if (req.getTel() != null)
-      h.setTel(req.getTel());
-    if (req.getFirstimage() != null)
-      h.setFirstimage(req.getFirstimage());
-    if (req.getMapx() != null)
-      h.setMapx(req.getMapx());
-    if (req.getMapy() != null)
-      h.setMapy(req.getMapy());
+    if (req.getTitle() != null)      h.setTitle(req.getTitle());
+    if (req.getAddr1() != null)      h.setAddr1(req.getAddr1());
+    if (req.getTel() != null)        h.setTel(req.getTel());
+    if (req.getFirstimage() != null) h.setFirstimage(req.getFirstimage());
+    if (req.getMapx() != null)       h.setMapx(req.getMapx());
+    if (req.getMapy() != null)       h.setMapy(req.getMapy());
     hotelRepo.save(h);
     return getHotelBasic(contentid);
   }
@@ -130,8 +124,7 @@ public class HotelBusinessService {
   public HotelIntroDTO getHotelIntro(String contentid) {
     String cid = resolveHotelForBusiness(contentid).getContentid();
     HotelIntro i = introRepo.findTopByContentidOrderByIdDesc(cid).orElse(null);
-    if (i == null)
-      return null;
+    if (i == null) return null;
     return HotelIntroDTO.from(i);
   }
 
@@ -165,8 +158,7 @@ public class HotelBusinessService {
 
   // ----- 공통 유틸 -----
   private String norm(String s) {
-    if (s == null)
-      return "";
+    if (s == null) return "";
     String t = s.trim().toLowerCase();
     return t.replaceAll("\\s+", " ");
   }
@@ -177,10 +169,11 @@ public class HotelBusinessService {
     String cid = resolveHotelForBusiness(contentid).getContentid();
     List<Room> all = roomRepo.findByContentidOrderByIdDesc(cid);
 
+    // 동일 제목 최신 1건만
     Map<String, Room> picked = new LinkedHashMap<>();
     for (Room r : all) {
       String key = norm(r.getRoomtitle());
-      picked.putIfAbsent(key, r); // 최신 것만 남김
+      picked.putIfAbsent(key, r);
     }
 
     return picked.values().stream()
@@ -203,7 +196,7 @@ public class HotelBusinessService {
   public RoomDTO updateRoom(String contentid, Long roomId, RoomDTO dto) {
     resolveHotelForBusiness(contentid);
     Room r = roomRepo.findById(roomId).orElseThrow();
-    System.out.println(dto+"-----------------------------------");
+
     if (dto.getRoomtitle() != null &&
         !norm(dto.getRoomtitle()).equals(norm(r.getRoomtitle()))) {
       if (roomRepo.existsNormalized(r.getContentid(), dto.getRoomtitle())) {
@@ -212,44 +205,45 @@ public class HotelBusinessService {
       r.setRoomtitle(dto.getRoomtitle());
     }
 
-     if (dto.getRoomcode() != null) r.setRoomcode(dto.getRoomcode());
-    if (dto.getRoombasecount() != null) r.setRoombasecount(dto.getRoombasecount());
-    if (dto.getRoommaxcount() != null) r.setRoommaxcount(dto.getRoommaxcount());
-    if (dto.getRoomcount() != null) r.setRoomcount(dto.getRoomcount());
-    
-    // 3-2. 가격 정보 (누락 필드 추가)
+    if (dto.getRoomcode() != null)        r.setRoomcode(dto.getRoomcode());
+    if (dto.getRoombasecount() != null)   r.setRoombasecount(dto.getRoombasecount());
+    if (dto.getRoommaxcount() != null)    r.setRoommaxcount(dto.getRoommaxcount());
+    if (dto.getRoomcount() != null)       r.setRoomcount(dto.getRoomcount());
+
+    // 가격
     if (dto.getRoomoffseasonminfee1() != null) r.setRoomoffseasonminfee1(dto.getRoomoffseasonminfee1());
-    if (dto.getRoomoffseasonminfee2() != null) r.setRoomoffseasonminfee2(dto.getRoomoffseasonminfee2()); 
+    if (dto.getRoomoffseasonminfee2() != null) r.setRoomoffseasonminfee2(dto.getRoomoffseasonminfee2());
     if (dto.getRoompeakseasonminfee1() != null) r.setRoompeakseasonminfee1(dto.getRoompeakseasonminfee1());
-    if (dto.getRoompeakseasonminfee2() != null) r.setRoompeakseasonminfee2(dto.getRoompeakseasonminfee2()); 
+    if (dto.getRoompeakseasonminfee2() != null) r.setRoompeakseasonminfee2(dto.getRoompeakseasonminfee2());
 
-    // 3-3. 크기 및 소개 (누락 필드 추가)
-    if (dto.getRoomsize1() != null) r.setRoomsize1(dto.getRoomsize1()); 
-    if (dto.getRoomsize2() != null) r.setRoomsize2(dto.getRoomsize2()); 
-    if (dto.getRoomintro() != null) r.setRoomintro(dto.getRoomintro()); 
+    // 크기/소개
+    if (dto.getRoomsize1() != null) r.setRoomsize1(dto.getRoomsize1());
+    if (dto.getRoomsize2() != null) r.setRoomsize2(dto.getRoomsize2());
+    if (dto.getRoomintro() != null) r.setRoomintro(dto.getRoomintro());
 
-    // 3-4. 이미지 URL (누락 필드 추가)
-    if (dto.getRoomimg1() != null) r.setRoomimg1(dto.getRoomimg1()); 
-    if (dto.getRoomimg2() != null) r.setRoomimg2(dto.getRoomimg2()); 
-    if (dto.getRoomimg3() != null) r.setRoomimg3(dto.getRoomimg3()); 
-    if (dto.getRoomimg4() != null) r.setRoomimg4(dto.getRoomimg4()); 
-    if (dto.getRoomimg5() != null) r.setRoomimg5(dto.getRoomimg5()); 
+    // 이미지
+    if (dto.getRoomimg1() != null) r.setRoomimg1(dto.getRoomimg1());
+    if (dto.getRoomimg2() != null) r.setRoomimg2(dto.getRoomimg2());
+    if (dto.getRoomimg3() != null) r.setRoomimg3(dto.getRoomimg3());
+    if (dto.getRoomimg4() != null) r.setRoomimg4(dto.getRoomimg4());
+    if (dto.getRoomimg5() != null) r.setRoomimg5(dto.getRoomimg5());
 
-    // 3-5. 옵션 (누락된 모든 옵션 필드 추가)
-    if (dto.getRoomaircondition() != null) r.setRoomaircondition(dto.getRoomaircondition()); 
-    if (dto.getRoombath() != null) r.setRoombath(dto.getRoombath());                    
-    if (dto.getRoombathfacility() != null) r.setRoombathfacility(dto.getRoombathfacility());
-    if (dto.getRoomcable() != null) r.setRoomcable(dto.getRoomcable());           
-    if (dto.getRoomcook() != null) r.setRoomcook(dto.getRoomcook());                      
-    if (dto.getRoomhairdryer() != null) r.setRoomhairdryer(dto.getRoomhairdryer());     
-    if (dto.getRoomhometheater() != null) r.setRoomhometheater(dto.getRoomhometheater());   
-    if (dto.getRoominternet() != null) r.setRoominternet(dto.getRoominternet());          
-    if (dto.getRoompc() != null) r.setRoompc(dto.getRoompc());                  
-    if (dto.getRoomrefrigerator() != null) r.setRoomrefrigerator(dto.getRoomrefrigerator());
-    if (dto.getRoomsofa() != null) r.setRoomsofa(dto.getRoomsofa());               
-    if (dto.getRoomtable() != null) r.setRoomtable(dto.getRoomtable());               
-    if (dto.getRoomtoiletries() != null) r.setRoomtoiletries(dto.getRoomtoiletries());     
-    if (dto.getRoomtv() != null) r.setRoomtv(dto.getRoomtv());
+    // 옵션
+    if (dto.getRoomaircondition() != null)  r.setRoomaircondition(dto.getRoomaircondition());
+    if (dto.getRoombath() != null)          r.setRoombath(dto.getRoombath());
+    if (dto.getRoombathfacility() != null)  r.setRoombathfacility(dto.getRoombathfacility());
+    if (dto.getRoomcable() != null)         r.setRoomcable(dto.getRoomcable());
+    if (dto.getRoomcook() != null)          r.setRoomcook(dto.getRoomcook());
+    if (dto.getRoomhairdryer() != null)     r.setRoomhairdryer(dto.getRoomhairdryer());
+    if (dto.getRoomhometheater() != null)   r.setRoomhometheater(dto.getRoomhometheater());
+    if (dto.getRoominternet() != null)      r.setRoominternet(dto.getRoominternet());
+    if (dto.getRoompc() != null)            r.setRoompc(dto.getRoompc());
+    if (dto.getRoomrefrigerator() != null)  r.setRoomrefrigerator(dto.getRoomrefrigerator());
+    if (dto.getRoomsofa() != null)          r.setRoomsofa(dto.getRoomsofa());
+    if (dto.getRoomtable() != null)         r.setRoomtable(dto.getRoomtable());
+    if (dto.getRoomtoiletries() != null)    r.setRoomtoiletries(dto.getRoomtoiletries());
+    if (dto.getRoomtv() != null)            r.setRoomtv(dto.getRoomtv());
+
     roomRepo.save(r);
     return RoomDTO.from(r);
   }
@@ -273,25 +267,36 @@ public class HotelBusinessService {
       reservations = reservationRepo.findByHotel_ContentidOrderByReservationDateDesc(cid);
     }
 
-    Map<String, String> roomMap = roomRepo.findAll().stream()
+    // ✅ code → title / id 둘 다 맵으로 준비
+    Map<String, String> roomTitleMap = roomRepo.findAll().stream()
+        .filter(r -> r.getContentid() != null && r.getRoomcode() != null)
         .collect(Collectors.toMap(
             r -> r.getContentid() + "::" + r.getRoomcode(),
             Room::getRoomtitle,
             (a, b) -> a));
 
+    Map<String, Long> roomIdMap = roomRepo.findAll().stream()
+        .filter(r -> r.getContentid() != null && r.getRoomcode() != null)
+        .collect(Collectors.toMap(
+            r -> r.getContentid() + "::" + r.getRoomcode(),
+            Room::getId,
+            (a, b) -> a));
+
     return reservations.stream()
-        .map(r -> toDtoWithPayment(r, roomMap))
+        .map(r -> toDtoWithPayment(r, roomTitleMap, roomIdMap))
         .toList();
   }
 
-  private ReservationDTO toDtoWithPayment(Reservation r, Map<String, String> roomMap) {
-    var payments = paymentRepo.findByReservationReservationId(r.getReservationId());
+  private ReservationDTO toDtoWithPayment(Reservation r,
+                                          Map<String, String> roomTitleMap,
+                                          Map<String, Long> roomIdMap) {
 
+    // 최신 결제 1건 추출
+    var payments = paymentRepo.findByReservationReservationId(r.getReservationId());
     String payStatus = null;
     Long payId = null;
     LocalDateTime payDate = null;
     Integer payAmount = null;
-
     if (!payments.isEmpty()) {
       var latest = payments.get(payments.size() - 1);
       payStatus = latest.getPaymentStatus();
@@ -300,38 +305,29 @@ public class HotelBusinessService {
       payAmount = latest.getPaymentAmount();
     }
 
-    String roomKey = (r.getHotel().getContentid() != null && r.getRoomcode() != null)
-        ? r.getHotel().getContentid() + "::" + r.getRoomcode()
-        : null;
-    String roomTitle = roomKey != null ? roomMap.get(roomKey) : null;
+    // key: contentid::roomcode
+    String cid = (r.getHotel() != null) ? r.getHotel().getContentid() : null;
+    String roomKey = (cid != null && r.getRoomcode() != null) ? cid + "::" + r.getRoomcode() : null;
 
-    String contentId = r.getHotel() != null ? r.getHotel().getContentid() : null;
-    String hotelTitle = r.getHotel() != null ? r.getHotel().getTitle() : null;
+    // 기본 DTO
+    ReservationDTO dto = ReservationDTO.from(r);
 
-    return new ReservationDTO(
-        r.getReservationId(),
-        r.getUser() != null ? r.getUser().getUsername() : null,
-        r.getUser() != null ? r.getUser().getName() : null,
-        null,
-        r.getUser() != null ? r.getUser().getPhoneNumber() : null,
-        r.getReservName(),
-        r.getReservPhone(),
-        r.getCheckInDate(),
-        r.getCheckOutDate(),
-        r.getRoomcode(),
-        roomTitle,
-        r.getStatus(),
-        r.getTotalPrice(),
-        r.getReservationDate(),
-        r.getNumAdults(),
-        r.getNumChildren(),
-        payStatus,
-        payId,
-        payDate,
-        payAmount,
-        contentId,
-        hotelTitle
-        );
+    // 보강: roomtitle/roomId + 결제 + 호텔 표시값(안전차원 다시 세팅)
+    if (roomKey != null) {
+      dto.setRoomtitle(roomTitleMap.get(roomKey));
+      dto.setRoomId(roomIdMap.get(roomKey));
+    }
+    dto.setPaymentStatus(payStatus);
+    dto.setPaymentId(payId);
+    dto.setPaymentDate(payDate);
+    dto.setPaymentAmount(payAmount);
+
+    if (r.getHotel() != null) {
+      dto.setContentId(r.getHotel().getContentid());
+      dto.setHotelTitle(r.getHotel().getTitle());
+    }
+
+    return dto;
   }
 
   @Transactional(readOnly = true)
@@ -340,8 +336,7 @@ public class HotelBusinessService {
     List<Long> resIds = reservationRepo.findByHotel_ContentidOrderByReservationDateDesc(cid).stream()
         .map(Reservation::getReservationId)
         .toList();
-    if (resIds.isEmpty())
-      return List.of();
+    if (resIds.isEmpty()) return List.of();
 
     return paymentRepo.findByReservationReservationIdIn(resIds).stream()
         .map(p -> new PaymentDTO(
@@ -360,9 +355,9 @@ public class HotelBusinessService {
     resolveHotelForBusiness(contentid);
     switch (action) {
       case "paidreservation" -> reservationRepo.updateStatus(ids, "PAID");
-      case "paidpayment" -> paymentRepo.updatePaymentStatus(ids, "PAID");
-      case "cancel" -> reservationRepo.updateStatus(ids, "CANCELLED");
-      case "refund" -> paymentRepo.updatePaymentStatus(ids, "CANCELED");
+      case "paidpayment"     -> paymentRepo.updatePaymentStatus(ids, "PAID");
+      case "cancel"          -> reservationRepo.updateStatus(ids, "CANCELLED");
+      case "refund"          -> paymentRepo.updatePaymentStatus(ids, "CANCELED");
       default -> throw new IllegalArgumentException("Unknown action: " + action);
     }
   }
@@ -389,16 +384,11 @@ public class HotelBusinessService {
     Reservation r = reservationRepo.findById(id)
         .orElseThrow(() -> new RuntimeException("예약을 찾을 수 없습니다. id=" + id));
 
-    if (dto.getCheckInDate() != null)
-      r.setCheckInDate(dto.getCheckInDate());
-    if (dto.getCheckOutDate() != null)
-      r.setCheckOutDate(dto.getCheckOutDate());
-    if (dto.getNumAdults() != null)
-      r.setNumAdults(dto.getNumAdults());
-    if (dto.getNumChildren() != null)
-      r.setNumChildren(dto.getNumChildren());
-    if (dto.getStatus() != null)
-      r.setStatus(dto.getStatus());
+    if (dto.getCheckInDate() != null)  r.setCheckInDate(dto.getCheckInDate());
+    if (dto.getCheckOutDate() != null) r.setCheckOutDate(dto.getCheckOutDate());
+    if (dto.getNumAdults() != null)    r.setNumAdults(dto.getNumAdults());
+    if (dto.getNumChildren() != null)  r.setNumChildren(dto.getNumChildren());
+    if (dto.getStatus() != null)       r.setStatus(dto.getStatus());
     reservationRepo.save(r);
 
     if (dto.getPaymentStatus() != null && dto.getPaymentId() != null) {
