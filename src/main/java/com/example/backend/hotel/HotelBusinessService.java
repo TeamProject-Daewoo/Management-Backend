@@ -1,16 +1,20 @@
 package com.example.backend.hotel;
 
+import java.io.IOException;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.apache.tika.Tika;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.example.backend.authentication.Role;
 import com.example.backend.authentication.User;
@@ -430,5 +434,23 @@ public class HotelBusinessService {
     }
 
     return HotelDTO.from(h);
+  }
+
+  public boolean isImageFile(MultipartFile file) throws IOException {
+    System.out.println(file+"===================");
+    if (file == null || file.isEmpty()) {
+        return false; // 파일이 없는 경우도 처리
+    }
+
+    // 허용할 MIME 타입 목록 (이미지 파일)
+    List<String> allowedMimeTypes = Arrays.asList("image/jpeg", "image/png", "image/gif");
+
+    // Apache Tika를 사용하여 파일의 실제 MIME 타입을 감지
+    Tika tika = new Tika();
+    String mimeType = tika.detect(file.getInputStream());
+
+    System.out.println(allowedMimeTypes.contains(mimeType));
+    // 실제 MIME 타입이 허용 목록에 있는지 확인
+    return allowedMimeTypes.contains(mimeType);
   }
 }
