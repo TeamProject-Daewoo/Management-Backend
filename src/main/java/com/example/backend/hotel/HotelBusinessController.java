@@ -8,6 +8,7 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.example.backend.hotel_intro.HotelIntroDTO;
 import com.example.backend.hotel_intro.HotelIntroUpdateRequest;
@@ -25,6 +26,9 @@ import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 @RestController
 @RequiredArgsConstructor
@@ -141,6 +145,7 @@ public class HotelBusinessController {
     @GetMapping("/s3/presign")
     public Map<String, String> getPresignedUrl(@RequestParam String filename,
             @RequestParam String contentType) {
+        
         String key = "hotels/" + UUID.randomUUID() + "-" + filename;
 
         PutObjectRequest objectRequest = PutObjectRequest.builder()
@@ -158,8 +163,15 @@ public class HotelBusinessController {
 
         return Map.of(
                 "url", presignedRequest.url().toString(),
-     
                 "publicUrl", String.format("https://%s.s3.%s.amazonaws.com/%s", bucket, region, key));
+    }
+
+    @PostMapping("checkVaild")    
+    public ResponseEntity<Boolean> isValidFile(@RequestParam MultipartFile fileObject) throws Exception {
+        System.out.println("컨트롤러 진입");
+        Boolean b = svc.isImageFile(fileObject);
+        System.out.println(b);
+        return ResponseEntity.ok(b);
     }
 
     // ====== 특별가(가격) 관리 ======
