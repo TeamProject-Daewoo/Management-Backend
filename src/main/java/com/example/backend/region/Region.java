@@ -7,6 +7,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
@@ -18,6 +19,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "regions", uniqueConstraints = {
     @UniqueConstraint(columnNames = {"code", "area_code"})
+}, indexes = {
+    @Index(name = "idx_name_chosung", columnList = "name_chosung"),
+    @Index(name = "idx_name", columnList = "name")
 })
 public class Region {
 

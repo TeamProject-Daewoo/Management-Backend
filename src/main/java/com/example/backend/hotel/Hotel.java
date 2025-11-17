@@ -7,7 +7,11 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-@Table(name = "HOTELS")
+@Table(name = "HOTELS", indexes = {
+    @Index(name = "idx_title", columnList = "title"),
+    @Index(name = "idx_addr1", columnList = "addr1"),
+    @Index(name = "idx_business_registration_number", columnList = "business_registration_number")
+})
 public class Hotel {
 
   // ✅ 스키마상 PK는 contentid(varchar)

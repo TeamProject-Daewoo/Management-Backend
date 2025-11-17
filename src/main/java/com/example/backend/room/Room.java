@@ -6,7 +6,9 @@ import lombok.Setter;
 import lombok.ToString;
 
 @Entity
-@Table(name = "rooms")
+@Table(name = "rooms", indexes = {
+    @Index(name = "idx_contentid", columnList = "contentid")
+})
 @Getter
 @Setter
 @ToString
