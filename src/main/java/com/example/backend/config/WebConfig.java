@@ -23,7 +23,8 @@ public class WebConfig implements WebMvcConfigurer {
                     "http://localhost:8080", // Vue CLI 기본 포트
                     "http://localhost:8889",
                     "http://localhost:7000",// 관리자 페이지 포트
-                    "http://localhost:6500"// 사업자 페이지 포트
+                    "http://localhost:6500",// 사업자 페이지 포트
+                    "https://www.hotelhub.store"
                 )
                 .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
